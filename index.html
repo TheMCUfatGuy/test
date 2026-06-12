@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>人員事故與出勤管理系統 (雲端同步版)</title>
+    <title>人員事故與出勤管理系統</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -23,7 +23,7 @@
             --success-hover: #059669;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; display: none; } /* 預設隱藏系統，登入後才顯示 */
+        .container { max-width: 1000px; margin: 0 auto; display: none; } 
         h1, h2, h3 { color: #0f172a; }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
         .tab-btn { padding: 10px 20px; border: none; background: #e2e8f0; cursor: pointer; border-radius: 6px 6px 0 0; font-weight: bold; }
@@ -78,8 +78,8 @@
 
 <div id="auth-panel" class="auth-container">
     <div class="auth-header">
-        <h2>系統管理員登入</h2>
-        <p style="color: #64748b; font-size: 14px;">請輸入帳號密碼以同步雲端資料</p>
+        <h2>人員管理系統 - 登入</h2>
+        <p style="color: #64748b; font-size: 14px;">各帳號資料完全獨立隔離</p>
     </div>
     <div class="form-group">
         <label>電子信箱 (Email)</label>
@@ -91,11 +91,12 @@
     </div>
     <button onclick="handleLogin()" style="width: 100%; margin-top: 10px;">登入系統</button>
     <p id="auth-error" style="color: var(--danger); font-size: 13px; text-align: center; margin-top: 10px;"></p>
-    <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 20px;">*若首次使用，請先至 Firebase 後台建立帳號</p>
+    <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 20px;">*每一組登入帳號看見的員工資料皆不相同。</p>
 </div>
 
 <div id="main-app" class="container">
     <h1>人員出勤與事故管理系統</h1>
+    <p style="font-size:13px; color:#475569; margin-top:-10px;" id="user-display-email">目前登入：</p>
     <button class="logout-btn" onclick="handleLogout()">登出系統</button>
     
     <div class="nav-tabs">
@@ -111,7 +112,7 @@
                 <button onclick="addMember()">新增</button>
             </div>
             <h3>人員列表（點擊卡片進入月曆，點右上角 X 刪除）</h3>
-            <div id="member-list" class="grid">將由雲端載入中...</div>
+            <div id="member-list" class="grid">將由個人雲端載入中...</div>
         </div>
 
         <div id="member-calendar-view" style="display: none; margin-top: 20px;">
@@ -138,19 +139,18 @@
             <input type="time" id="report-time" value="08:00" onchange="initReportPage()">
         </div>
         <div class="form-group">
-            <label><strong>3. 檢查「實際到場」人員：</strong>（系統已依據事故時間自動判定，您仍可手動微調）</label>
+            <label><strong>3. 檢查「實際到場」人員：</strong></label>
             <div id="report-attendance-list" class="member-checkbox-list"></div>
         </div>
         <div class="form-group" style="background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #ffeeba;">
-            <label><strong>4. 突發臨時事故（自由額外追加，自動更新文字）：</strong></label>
-            <input type="text" id="emergency-input" placeholder="例如：臨時公假:小明, 車禍:老張" oninput="generateReport()">
+            <label><strong>4. 突發臨時事故（自由額外追加）：</strong></label>
+            <input type="text" id="emergency-input" placeholder="例如：臨時公假:小明" oninput="generateReport()">
         </div>
         <button onclick="copyReportText()">複製彙整文字檔案</button>
         <div class="summary-box" id="report-output">報表生成中...</div>
 
         <div class="dispatch-box">
             <h3>⚡ 智慧空閒人員指派工作</h3>
-            <p style="font-size: 13px; color: #4b5563; margin-top: -5px;">依據上方選擇的日期，輸入一個時間區間，系統會自動挑出當下完全沒有任何事故的人員。</p>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <div style="flex: 1;">
                     <label style="font-size: 13px; font-weight: bold;">查詢時間起</label>
@@ -162,11 +162,11 @@
                 </div>
             </div>
             <div style="margin-bottom: 10px;">
-                <strong>🟢 當下空閒無事故人員（可自行勾選指派目標）：</strong>
+                <strong>🟢 當下空閒無事故人員：</strong>
                 <div id="free-members-list" class="free-checkbox-list"></div>
             </div>
             <div class="form-group" style="display: flex; gap: 10px; margin-top: 15px;">
-                <input type="text" id="dispatch-label" placeholder="輸入要指派的工作/安排名稱 (如：刷油漆)">
+                <input type="text" id="dispatch-label" placeholder="輸入要指派的工作名稱">
                 <button onclick="executeDispatch()" style="background: var(--success); white-space: nowrap;">⚡ 批量指派所選人員</button>
             </div>
         </div>
@@ -178,7 +178,7 @@
         <h3 id="modal-title" style="margin-top:0;">新增安排</h3>
         <div class="form-group">
             <label style="font-weight:bold; font-size:14px;">工作/事故名稱：</label>
-            <input type="text" id="modal-label" placeholder="如：割草、例假">
+            <input type="text" id="modal-label" placeholder="如：割草">
         </div>
         <div class="form-group">
             <label style="font-weight:bold; font-size:14px;">時間類型：</label>
@@ -206,7 +206,7 @@
 
 <script>
     // --------------------------------------------------
-    // ⚠️ 貼上您的 Firebase 雲端金鑰設定
+    // ⚠️ 請在此處替換您專屬的 Firebase 金鑰
     // --------------------------------------------------
     const firebaseConfig = {
 
@@ -226,23 +226,26 @@
 
 };
     
-    // 初始化 Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // 本地資料快照
     let data = { members: [], incidents: {} };
+    let currentUserUid = ""; // 儲存當前登入使用者的不重複 ID
+    let unsubscribeSnapshot = null; // 用於註銷前一個使用者的即時監聽
 
-    // 監聽登入狀態改變
+    // 監聽登入狀態改變 (核心邏輯：依據使用者 UID 切換雲端資料夾)
     auth.onAuthStateChanged(user => {
+        if (unsubscribeSnapshot) unsubscribeSnapshot(); // 清除舊的監聽
+
         if (user) {
-            // 已登入：顯示系統，並與雲端即時同步資料
+            currentUserUid = user.uid; // 取得當前帳號的專屬 UID
             document.getElementById('auth-panel').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-display-email').innerText = `目前登入帳號：${user.email} (您的專屬資料庫已啟用)`;
             
-            // 監聽雲端資料庫更新 (任何電腦修改，其他電腦 1 秒內自動同步)
-            db.collection("attendance_system").doc("global_data").onSnapshot(doc => {
+            // 🔒 關鍵改動：路徑綁定為當前登入者的 UID
+            unsubscribeSnapshot = db.collection("attendance_users").doc(currentUserUid).onSnapshot(doc => {
                 if (doc.exists) {
                     data = doc.data();
                 } else {
@@ -254,49 +257,42 @@
                 }
             });
         } else {
-            // 未登入：隱藏系統，顯示登入畫面
+            currentUserUid = "";
             document.getElementById('auth-panel').style.display = 'block';
             document.getElementById('main-app').style.display = 'none';
         }
     });
 
-    // 儲存至雲端資料庫
+    // 儲存至屬於當前使用者的雲端資料夾
     function saveData() {
-        db.collection("attendance_system").doc("global_data").set(data)
-        .catch(err => alert("雲端儲存失敗，請檢查權限：" + err.message));
+        if(!currentUserUid) return;
+        db.collection("attendance_users").doc(currentUserUid).set(data)
+        .catch(err => alert("儲存失敗：" + err.message));
     }
 
-    // 登入功能
     function handleLogin() {
         const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value;
         const errDiv = document.getElementById('auth-error');
         errDiv.innerText = "";
-
         if(!email || !password) return errDiv.innerText = "請完整輸入帳號與密碼";
 
         auth.signInWithEmailAndPassword(email, password)
-        .catch(error => {
-            errDiv.innerText = "登入失敗：" + error.message;
-        });
+        .catch(error => { errDiv.innerText = "登入失敗：" + error.message; });
     }
 
-    // 登出功能
     function handleLogout() {
-        if(confirm("確定要登出系統嗎？")) {
-            auth.signOut();
-        }
+        if(confirm("確定要登出系統嗎？")) { auth.signOut(); }
     }
 
-    // --- 以下為系統的核心控制邏輯 ---
+    // --- 以下為系統核心控制邏輯 ---
     function initTimeSelectOptions() {
         const startSelect = document.getElementById('modal-start-time');
         const endSelect = document.getElementById('modal-end-time');
         startSelect.innerHTML = ''; endSelect.innerHTML = '';
         for (let h = 0; h < 24; h++) {
             for (let m of ['00', '30']) {
-                const hh = String(h).padStart(2, '0');
-                const timeStr = `${hh}:${m}`;
+                const hh = String(h).padStart(2, '0'); const timeStr = `${hh}:${m}`;
                 const optStart = document.createElement('option'); optStart.value = timeStr; optStart.innerText = timeStr; startSelect.appendChild(optStart);
                 const optEnd = document.createElement('option'); optEnd.value = timeStr; optEnd.innerText = timeStr; endSelect.appendChild(optEnd);
             }
@@ -315,33 +311,24 @@
         const listDiv = document.getElementById('member-list');
         listDiv.innerHTML = '';
         if(!data.members || data.members.length === 0) {
-            listDiv.innerHTML = '<p style="color:#64748b;">目前暫無人員，請先新增。</p>';
-            return;
+            listDiv.innerHTML = '<p style="color:#64748b;">目前暫無人員，請先新增。</p>'; return;
         }
         data.members.forEach(name => {
-            const card = document.createElement('div');
-            card.className = 'member-card';
-            card.innerText = name;
-            card.onclick = () => openCalendar(name);
-            const delBtn = document.createElement('div');
-            delBtn.className = 'delete-btn'; delBtn.innerText = '×';
+            const card = document.createElement('div'); card.className = 'member-card'; card.innerText = name; card.onclick = () => openCalendar(name);
+            const delBtn = document.createElement('div'); delBtn.className = 'delete-btn'; delBtn.innerText = '×';
             delBtn.onclick = (e) => { e.stopPropagation(); deleteMember(name); };
             card.appendChild(delBtn); listDiv.appendChild(card);
         });
     }
 
     function addMember() {
-        const input = document.getElementById('new-member-name');
-        const name = input.value.trim();
+        const input = document.getElementById('new-member-name'); const name = input.value.trim();
         if(!name) return alert('請輸入姓名');
         if(!data.members) data.members = [];
         if(!data.incidents) data.incidents = {};
         if(data.members.includes(name)) return alert('此人員已存在');
-        
-        data.members.push(name);
-        data.incidents[name] = data.incidents[name] || {};
-        saveData();
-        input.value = '';
+        data.members.push(name); data.incidents[name] = data.incidents[name] || {};
+        saveData(); input.value = '';
     }
 
     function deleteMember(name) {
@@ -352,9 +339,7 @@
         }
     }
 
-    let currentSelectMember = '';
-    let currentDate = new Date();
-    let currentActiveDateStr = '';
+    let currentSelectMember = ''; let currentDate = new Date(); let currentActiveDateStr = '';
 
     function openCalendar(name) {
         currentSelectMember = name;
@@ -369,58 +354,42 @@
         document.getElementById('member-calendar-view').style.display = 'none';
     }
 
-    function changeMonth(direction) {
-        currentDate.setMonth(currentDate.getMonth() + direction);
-        renderCalendar();
-    }
+    function changeMonth(direction) { currentDate.setMonth(currentDate.getMonth() + direction); renderCalendar(); }
 
     function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
+        const year = currentDate.getFullYear(); const month = currentDate.getMonth();
         document.getElementById('calendar-month-year').innerText = `${year} 年 ${month + 1} 月`;
-        const container = document.getElementById('calendar-container');
-        container.innerHTML = '';
-        const grid = document.createElement('div');
-        grid.className = 'calendar-grid';
+        const container = document.getElementById('calendar-container'); container.innerHTML = '';
+        const grid = document.createElement('div'); grid.className = 'calendar-grid';
 
         ['日', '一', '二', '三', '四', '五', '六'].forEach(w => {
-            const label = document.createElement('div');
-            label.className = 'calendar-day-label'; label.innerText = w; grid.appendChild(label);
+            const label = document.createElement('div'); label.className = 'calendar-day-label'; label.innerText = w; grid.appendChild(label);
         });
 
-        const firstDay = new Date(year, month, 1).getDay();
-        const totalDays = new Date(year, month + 1, 0).getDate();
-
+        const firstDay = new Date(year, month, 1).getDay(); const totalDays = new Date(year, month + 1, 0).getDate();
         for (let i = 0; i < firstDay; i++) {
-            const emptyCell = document.createElement('div');
-            emptyCell.className = 'calendar-cell'; emptyCell.style.background = '#f1f5f9'; grid.appendChild(emptyCell);
+            const emptyCell = document.createElement('div'); emptyCell.className = 'calendar-cell'; emptyCell.style.background = '#f1f5f9'; grid.appendChild(emptyCell);
         }
 
         const memberIncidents = data.incidents[currentSelectMember] || {};
-
         for (let day = 1; day <= totalDays; day++) {
-            const cell = document.createElement('div');
-            cell.className = 'calendar-cell';
+            const cell = document.createElement('div'); cell.className = 'calendar-cell';
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             cell.innerHTML = `<div class="date-num">${day}</div>`;
-            const tagsContainer = document.createElement('div');
-            tagsContainer.className = 'event-tags-container';
+            const tagsContainer = document.createElement('div'); tagsContainer.className = 'event-tags-container';
 
             const list = memberIncidents[dateStr] || [];
             list.forEach((incident, index) => {
-                const tag = document.createElement('div');
-                tag.className = 'event-tag';
+                const tag = document.createElement('div'); tag.className = 'event-tag';
                 const timeText = incident.isAllDay ? '整天' : `${incident.startTime}~${incident.endTime}`;
                 tag.innerHTML = `<span>${incident.label}(${timeText})</span>`;
-                const delSpan = document.createElement('span');
-                delSpan.className = 'event-del'; delSpan.innerText = '×';
+                const delSpan = document.createElement('span'); delSpan.className = 'event-del'; delSpan.innerText = '×';
                 delSpan.onclick = (e) => {
                     e.stopPropagation();
                     if(confirm(`確定要刪除「${incident.label}」嗎？`)) {
                         data.incidents[currentSelectMember][dateStr].splice(index, 1);
                         if(data.incidents[currentSelectMember][dateStr].length === 0) delete data.incidents[currentSelectMember][dateStr];
-                        saveData();
-                        renderCalendar();
+                        saveData(); renderCalendar();
                     }
                 };
                 tag.appendChild(delSpan); tagsContainer.appendChild(tag);
@@ -434,12 +403,9 @@
 
     function openIncidentModal(dateStr) {
         document.getElementById('modal-title').innerText = `${currentSelectMember} - ${dateStr} 新增安排`;
-        document.getElementById('modal-label').value = '';
-        document.getElementById('modal-type').value = 'allDay';
-        toggleModalTimeFields();
-        document.getElementById('incident-modal').style.display = 'flex';
+        document.getElementById('modal-label').value = ''; document.getElementById('modal-type').value = 'allDay';
+        toggleModalTimeFields(); document.getElementById('incident-modal').style.display = 'flex';
     }
-
     function closeIncidentModal() { document.getElementById('incident-modal').style.display = 'none'; }
     function toggleModalTimeFields() {
         const type = document.getElementById('modal-type').value;
@@ -447,16 +413,14 @@
     }
 
     function submitIncidentModal() {
-        const label = document.getElementById('modal-label').value.trim();
-        const type = document.getElementById('modal-type').value;
+        const label = document.getElementById('modal-label').value.trim(); const type = document.getElementById('modal-type').value;
         if (!label) return alert('請輸入工作/事故名稱');
 
         let newIncident = {};
         if (type === 'allDay') {
             newIncident = { label: label, isAllDay: true, startTime: "", endTime: "" };
         } else {
-            const start = document.getElementById('modal-start-time').value;
-            const end = document.getElementById('modal-end-time').value;
+            const start = document.getElementById('modal-start-time').value; const end = document.getElementById('modal-end-time').value;
             if (timeToMinutes(start) >= timeToMinutes(end)) return alert('結束時間必須晚於開始時間！');
             newIncident = { label: label, isAllDay: false, startTime: start, endTime: end };
         }
@@ -464,72 +428,48 @@
         if(!data.incidents[currentSelectMember]) data.incidents[currentSelectMember] = {};
         if (!data.incidents[currentSelectMember][currentActiveDateStr]) data.incidents[currentSelectMember][currentActiveDateStr] = [];
         data.incidents[currentSelectMember][currentActiveDateStr].push(newIncident);
-        
-        saveData();
-        closeIncidentModal();
-        renderCalendar();
+        saveData(); closeIncidentModal(); renderCalendar();
     }
 
-    let actualPresentMembers = new Set();
-    let freeMembersList = []; 
-
+    let actualPresentMembers = new Set(); let freeMembersList = []; 
     function timeToMinutes(timeStr) {
-        if (!timeStr) return 0;
-        const parts = timeStr.split(':');
-        return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+        if (!timeStr) return 0; const parts = timeStr.split(':'); return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
     }
-
     function isTimeOverlapping(s1, e1, s2, e2) { return Math.max(s1, s2) < Math.min(e1, e2); }
 
     function initReportPage() {
         const dateInput = document.getElementById('report-date');
-        if (!dateInput.value) {
-            const today = new Date();
-            dateInput.value = today.toISOString().split('T')[0];
-        }
-        const targetDate = dateInput.value;
-        const setTimeStr = document.getElementById('report-time').value; 
-        const setTimeMinutes = timeToMinutes(setTimeStr);
+        if (!dateInput.value) { dateInput.value = new Date().toISOString().split('T')[0]; }
+        const targetDate = dateInput.value; const setTimeStr = document.getElementById('report-time').value; const setTimeMinutes = timeToMinutes(setTimeStr);
         actualPresentMembers = new Set();
         
         if(data.members) {
             data.members.forEach(name => {
                 const incidentsList = data.incidents?.[name]?.[targetDate] || [];
-                if (incidentsList.length === 0) {
-                    actualPresentMembers.add(name);
-                } else {
+                if (incidentsList.length === 0) { actualPresentMembers.add(name); } 
+                else {
                     let canAttend = true;
                     for (let incident of incidentsList) {
                         if (incident.isAllDay) { canAttend = false; break; }
                         else {
-                            const startMin = timeToMinutes(incident.startTime);
-                            const endMin = timeToMinutes(incident.endTime);
-                            if (setTimeMinutes >= startMin && setTimeMinutes < endMin) { canAttend = false; break; }
+                            if (setTimeMinutes >= timeToMinutes(incident.startTime) && setTimeMinutes < timeToMinutes(incident.endTime)) { canAttend = false; break; }
                         }
                     }
                     if (canAttend) actualPresentMembers.add(name);
                 }
             });
         }
-        renderAttendanceCheckboxes();
-        generateReport();
-        checkFreeMembers(); 
+        renderAttendanceCheckboxes(); generateReport(); checkFreeMembers(); 
     }
 
     function renderAttendanceCheckboxes() {
-        const container = document.getElementById('report-attendance-list');
-        container.innerHTML = '';
-        if(!data.members || data.members.length === 0) {
-            container.innerHTML = '<p style="color:#64748b;">暫無人員資料</p>'; return;
-        }
+        const container = document.getElementById('report-attendance-list'); container.innerHTML = '';
+        if(!data.members || data.members.length === 0) { container.innerHTML = '<p style="color:#64748b;">暫無人員資料</p>'; return; }
         data.members.forEach(name => {
             const div = document.createElement('div'); div.className = 'checkbox-item';
-            const chk = document.createElement('input'); chk.type = 'checkbox'; chk.id = `chk-${name}`;
-            chk.checked = actualPresentMembers.has(name);
+            const chk = document.createElement('input'); chk.type = 'checkbox'; chk.id = `chk-${name}`; chk.checked = actualPresentMembers.has(name);
             chk.onchange = (e) => {
-                if(e.target.checked) actualPresentMembers.add(name);
-                else actualPresentMembers.delete(name);
-                generateReport();
+                if(e.target.checked) actualPresentMembers.add(name); else actualPresentMembers.delete(name); generateReport();
             };
             const label = document.createElement('label'); label.htmlFor = `chk-${name}`; label.innerText = name;
             div.appendChild(chk); div.appendChild(label); container.appendChild(div);
@@ -537,10 +477,8 @@
     }
 
     function generateReport() {
-        const targetDate = document.getElementById('report-date').value;
-        const setTime = document.getElementById('report-time').value;
-        const setTimeMinutes = timeToMinutes(setTime);
-        const emergencyText = document.getElementById('emergency-input').value.trim();
+        const targetDate = document.getElementById('report-date').value; const setTime = document.getElementById('report-time').value;
+        const setTimeMinutes = timeToMinutes(setTime); const emergencyText = document.getElementById('emergency-input').value.trim();
         if (!targetDate) return;
 
         let incidentMap = {}; 
@@ -560,8 +498,7 @@
         if (emergencyText) {
             emergencyText.split(/[,，\s]+/).forEach(item => {
                 if (item.includes(':') || item.includes('：')) {
-                    const parts = item.split(/[:：]/);
-                    const label = parts[0].trim(); const name = parts[1].trim();
+                    const parts = item.split(/[:：]/); const label = parts[0].trim(); const name = parts[1].trim();
                     if (label && name) {
                         if (!incidentMap[label]) incidentMap[label] = [];
                         if (!incidentMap[label].includes(name)) incidentMap[label].push(name);
@@ -572,46 +509,37 @@
 
         let outputText = `【${targetDate} 集合回報】\n集合時間：${setTime}\n---------------------------\n`;
         for (let task in incidentMap) { outputText += `${task}：${incidentMap[task].join('、')}\n`; }
-        const totalExpected = data.members ? data.members.length : 0;
-        const actualArr = Array.from(actualPresentMembers);
-        const totalActual = actualArr.length;
+        const totalExpected = data.members ? data.members.length : 0; const actualArr = Array.from(actualPresentMembers); const totalActual = actualArr.length;
         outputText += `---------------------------\n應到：${totalExpected} 人\n實到：${totalActual} 人\n實到人員：${totalActual > 0 ? actualArr.join('、') : '無'}`;
         document.getElementById('report-output').innerText = outputText;
     }
 
     function copyReportText() {
-        const text = document.getElementById('report-output').innerText;
-        navigator.clipboard.writeText(text).then(() => alert('文字已成功複製到剪貼簿！'))
-        .catch(err => alert('複製失敗，請手動全選複製。'));
+        navigator.clipboard.writeText(document.getElementById('report-output').innerText).then(() => alert('文字已成功複製！'))
+        .catch(err => alert('複製失敗'));
     }
 
     function checkFreeMembers() {
         const targetDate = document.getElementById('report-date').value;
-        const startStr = document.getElementById('free-start').value;
-        const endStr = document.getElementById('free-end').value;
+        const startStr = document.getElementById('free-start').value; const endStr = document.getElementById('free-end').value;
         const queryStart = timeToMinutes(startStr); const queryEnd = timeToMinutes(endStr);
-        const listDiv = document.getElementById('free-members-list');
-        listDiv.innerHTML = '';
-        if (queryStart >= queryEnd) { listDiv.innerHTML = '<span style="color:var(--danger);">開始時間必須早於結束時間</span>'; return; }
+        const listDiv = document.getElementById('free-members-list'); listDiv.innerHTML = '';
+        if (queryStart >= queryEnd) { listDiv.innerHTML = '<span style="color:var(--danger);">時間不正確</span>'; return; }
 
         freeMembersList = [];
         if(data.members) {
             data.members.forEach(name => {
-                const list = data.incidents?.[name]?.[targetDate] || [];
-                let isFree = true;
+                const list = data.incidents?.[name]?.[targetDate] || []; let isFree = true;
                 for (let incident of list) {
                     if (incident.isAllDay) { isFree = false; break; }
-                    else {
-                        if (isTimeOverlapping(queryStart, queryEnd, timeToMinutes(incident.startTime), timeToMinutes(incident.endTime))) { isFree = false; break; }
-                    }
+                    else { if (isTimeOverlapping(queryStart, queryEnd, timeToMinutes(incident.startTime), timeToMinutes(incident.endTime))) { isFree = false; break; } }
                 }
                 if (isFree) freeMembersList.push(name);
             });
         }
 
-        if (freeMembersList.length === 0) {
-            listDiv.innerHTML = '<span style="color:#64748b;">此時段沒有完全空閒的人員</span>';
-        } else {
+        if (freeMembersList.length === 0) { listDiv.innerHTML = '<span>沒有空閒人員</span>'; } 
+        else {
             freeMembersList.forEach(name => {
                 const labelObj = document.createElement('label'); labelObj.className = 'free-item';
                 const chk = document.createElement('input'); chk.type = 'checkbox'; chk.name = 'free-member-choice'; chk.value = name; chk.checked = true; 
@@ -622,23 +550,20 @@
 
     function executeDispatch() {
         const targetDate = document.getElementById('report-date').value;
-        const startStr = document.getElementById('free-start').value;
-        const endStr = document.getElementById('free-end').value;
+        const startStr = document.getElementById('free-start').value; const endStr = document.getElementById('free-end').value;
         const labelInput = document.getElementById('dispatch-label'); const taskLabel = labelInput.value.trim();
-        if (!taskLabel) return alert('請輸入指派的工作名稱');
+        if (!taskLabel) return alert('請輸入工作名稱');
         const checkedBoxes = document.querySelectorAll('input[name="free-member-choice"]:checked');
-        if (checkedBoxes.length === 0) return alert('請至少勾選一位要指派工作的人員');
+        if (checkedBoxes.length === 0) return alert('請勾選人員');
 
         let selectedMembers = []; checkedBoxes.forEach(box => selectedMembers.push(box.value));
-        if (!confirm(`確定要將工作「${taskLabel} (${startStr}~${endStr})」指派給這 ${selectedMembers.length} 位人員嗎？`)) return;
+        if (!confirm(`確定指派工作嗎？`)) return;
 
         selectedMembers.forEach(name => {
-            data.incidents[name] = data.incidents[name] || {};
-            data.incidents[name][targetDate] = data.incidents[name][targetDate] || [];
+            data.incidents[name] = data.incidents[name] || {}; data.incidents[name][targetDate] = data.incidents[name][targetDate] || [];
             data.incidents[name][targetDate].push({ label: taskLabel, isAllDay: false, startTime: startStr, endTime: endStr });
         });
-
-        saveData(); labelInput.value = ''; alert('已指派勤務成功。');
+        saveData(); labelInput.value = ''; alert('派工成功！');
     }
 
     initTimeSelectOptions();
