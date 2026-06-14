@@ -22,12 +22,12 @@
             --warning: #f59e0b;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 60px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 70px; }
         .container { max-width: 1000px; margin: 0 auto; display: none; } 
         
         /* 手機版底部導覽列 */
         .nav-tabs { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); z-index: 999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); overflow-x: auto; }
-        .tab-btn { flex: 1; min-width: 75px; padding: 12px 5px; border: none; background: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #64748b; text-align: center; white-space: nowrap; }
+        .tab-btn { flex: 1; min-width: 70px; padding: 12px 2px; border: none; background: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #64748b; text-align: center; white-space: nowrap; }
         .tab-btn.active { color: var(--primary); border-top: 3px solid var(--primary); background: #f8fafc; }
         
         .panel { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: none; margin-bottom: 20px; }
@@ -46,9 +46,10 @@
 
         /* 人員卡片 */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 15px; }
-        .member-card { background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid transparent; position: relative; min-height: 70px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .member-card .name { font-weight: bold; font-size: 15px; margin-top: 8px; }
-        .member-card .tag-badge { position: absolute; top: 4px; left: 4px; background: #e2e8f0; color: #475569; font-size: 10px; padding: 1px 4px; border-radius: 4px; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .member-card { background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid transparent; position: relative; min-height: 75px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .member-card .name { font-weight: bold; font-size: 15px; margin-top: 12px; width: 100%; overflow: hidden; text-overflow: ellipsis; }
+        .member-card .tag-badge { position: absolute; top: 4px; left: 4px; background: #e2e8f0; color: #475569; font-size: 10px; padding: 2px 5px; border-radius: 4px; max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; border: 1px dashed #cbd5e1; }
+        .member-card .tag-badge:hover { background: #cbd5e1; color: #0f172a; }
         .member-card .delete-btn { position: absolute; top: 4px; right: 4px; background: #cbd5e1; color: #475569; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; line-height: 18px; text-align: center; font-weight: bold; }
         
         /* 週曆樣式 */
@@ -62,6 +63,7 @@
         
         /* 事故標籤 */
         .event-tag { font-size: 11px; background: #fee2e2; color: #ef4444; padding: 2px; border-radius: 3px; display: flex; justify-content: space-between; align-items: center; line-height: 1.2; word-break: break-all; }
+        .event-tag.guard-tag { background: #e0f2fe; color: #0369a1; } /* 衛哨專屬藍色標籤 */
         .event-del { color: #94a3b8; font-weight: bold; margin-left: 3px; cursor: pointer; padding: 0 2px; }
         .event-del:hover { color: var(--danger); }
         
@@ -78,6 +80,12 @@
 
         .summary-box { background: #f1f5f9; padding: 12px; border-radius: 6px; white-space: pre-wrap; font-family: monospace; font-size: 13px; margin-top: 10px; border: 1px solid var(--border); }
         .board-card { border-left: 4px solid var(--primary); background: #f8fafc; padding: 10px; margin-bottom: 8px; border-radius: 0 6px 6px 0; }
+        .board-card.guard-card { border-left-color: #0284c7; background: #f0f9ff; }
+
+        /* 表格樣式 (衛哨用) */
+        .guard-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .guard-table th, .guard-table td { border: 1px solid var(--border); padding: 10px; text-align: left; }
+        .guard-table th { background: #f1f5f9; }
 
         /* 彈窗 */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; padding: 15px; }
@@ -86,7 +94,7 @@
 
         /* iPhone 響應式優化 */
         @media (max-width: 480px) {
-            body { padding: 8px; padding-bottom: 75px; }
+            body { padding: 8px; padding-bottom: 80px; }
             .week-grid { gap: 3px; }
             .week-cell { min-height: 110px; padding: 2px; }
             .week-day-label { font-size: 11px; padding: 4px 1px; }
@@ -129,6 +137,7 @@
         <button class="tab-btn" id="btn-tab-calendar" onclick="switchTab('tab-calendar')">個人週曆</button>
         <button class="tab-btn" id="btn-tab-setting" onclick="switchTab('tab-setting')">設定中心</button>
         <button class="tab-btn" id="btn-tab-report" onclick="switchTab('tab-report')">報表派工</button>
+        <button class="tab-btn" id="btn-tab-guard" onclick="switchTab('tab-guard')">衛哨排班</button>
         <button class="tab-btn" id="btn-tab-board" onclick="switchTab('tab-board')">今日看板</button>
     </div>
 
@@ -139,7 +148,7 @@
             <input type="text" id="new-member-role" placeholder="輸入職位標籤 (例如: 文書、主計，可留空)">
             <button onclick="addMember()" style="margin-top: 8px; width:100%;">新增人員</button>
         </div>
-        <h3>人員列表 (點擊卡片開啟週曆)</h3>
+        <h3>人員列表 (點擊 [標籤] 修改職位，點擊 [卡片] 開啟週曆)</h3>
         <div id="member-list" class="grid"></div>
     </div>
 
@@ -176,7 +185,6 @@
         <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
 
         <h3>2. 每週固定勤務分類</h3>
-        <p style="font-size:12px; color:#64748b; margin-top:-5px;">設定好後可在週曆一鍵指派人員進此勤務中。</p>
         <div class="form-row">
             <input type="text" id="fixed-task-name" placeholder="例：尋車、環境、下菜" style="flex:3;">
             <button onclick="addFixedTask()">新增分類</button>
@@ -215,7 +223,7 @@
         <div class="summary-box" id="report-output"></div>
 
         <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; margin-top:20px;">
-            <h3 style="color:#166534; margin-top:0;">⚡ 智慧空閒人員指派工作</h3>
+            <h3 style="color:#166534; margin-top:0;">⚡空閒人員指派工作</h3>
             <div class="form-row">
                 <div style="flex:1;"><label>時間起</label><input type="time" id="free-start" value="09:00" onchange="checkFreeMembers()"></div>
                 <div style="flex:1;"><label>時間迄</label><input type="time" id="free-end" value="12:00" onchange="checkFreeMembers()"></div>
@@ -235,6 +243,40 @@
         </div>
     </div>
 
+    <div id="tab-guard" class="panel">
+        <h3>衛哨自動分配系統</h3>
+        
+        <div class="form-group">
+            <label>1. 選擇排哨日期：</label>
+            <input type="date" id="guard-date" onchange="loadGuardPage()">
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid var(--border); padding:12px; border-radius:8px; margin-bottom:15px;">
+            <label style="margin-bottom:6px;">2. 自訂班次時間範圍：</label>
+            <div class="form-row">
+                <input type="time" id="new-guard-start" value="02:00" style="flex:1;">
+                <input type="time" id="new-guard-end" value="04:00" style="flex:1;">
+                <button onclick="addGuardShift()" style="padding:10px;">新增班次</button>
+            </div>
+            <div id="guard-shifts-tags" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;"></div>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <button onclick="autoAssignGuards()" style="width:100%; background:var(--success); font-size:15px; padding:12px;">🎲 一鍵自動排哨 </button>
+        </div>
+
+        <h4>當日衛哨名單分配：</h4>
+        <div style="overflow-x:auto;">
+            <table class="guard-table">
+                <thead>
+                    <tr><th>班次時間</th><th>站哨人員</th><th>手動微調更換</th></tr>
+                </thead>
+                <tbody id="guard-table-body"></tbody>
+            </table>
+        </div>
+        <p style="font-size:12px; color:#64748b; margin-top:10px;">* 排哨原則：系統自動排除當日有「整天事故」人員。一人一天只會排一班。系統根據歷史累計站哨次數，優先指派站最少的人。</p>
+    </div>
+
     <div id="tab-board" class="panel">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 style="margin:0;">📅 全員本日事故動態</h3>
@@ -248,16 +290,11 @@
 <div id="incident-modal" class="modal">
     <div class="modal-content">
         <h3 id="modal-title" style="margin-top:0;">新增行程安排</h3>
-        
         <div class="form-group" style="background:#e0e7ff; padding:10px; border-radius:6px;">
             <label style="color:var(--primary);">✨ 快速套用自訂種類 / 固定勤務</label>
             <select id="modal-preset-select" onchange="applyPresetToModal()"><option value="">-- 請選擇 --</option></select>
         </div>
-
-        <div class="form-group">
-            <label>工作/事故/勤務名稱：</label>
-            <input type="text" id="modal-label" placeholder="如：割草">
-        </div>
+        <div class="form-group"><label>工作/事故/勤務名稱：</label><input type="text" id="modal-label" placeholder="如：割草"></div>
         <div class="form-group">
             <label>時間類型：</label>
             <select id="modal-type" onchange="toggleModalTimeFields()">
@@ -304,18 +341,21 @@
 
     // 完整的資料結構模型
     let data = { 
-        members: [],      // ["姓名", ...] 或 [{"name":"姓名","role":"職位"}, ...] 為向下相容，統一用物件處理
-        memberRoles: {},  // {"姓名": "職位標籤"}
-        incidents: {},    // {"姓名": {"日期": [{label, isAllDay, startTime, endTime}]}}
-        customEvents: [], // [{label, startTime, endTime}]
-        fixedTasks: [],   // ["尋車", "環境"]
-        fixedReminders: []// [{day, time, text}]
+        members: [],      
+        memberRoles: {},  
+        incidents: {},    
+        customEvents: [], 
+        fixedTasks: [],   
+        fixedReminders: [],
+        guardShifts: ["02:00-04:00", "04:00-06:00", "22:00-24:00"], // 衛哨班次設定
+        guardHistory: {}  // {"姓名": 累計站哨次數} 用於公平排序
     };
     
     let currentUserUid = "";
     let unsubscribeSnapshot = null;
-    let currentCalDate = new Date(); // 當前週曆時間
+    let currentCalDate = new Date(); 
     let showWeekend = false;
+    let currentSelectMember = '';
 
     // 監聽登入狀態
     auth.onAuthStateChanged(user => {
@@ -326,7 +366,6 @@
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('user-display-email').innerText = `登入帳號：${user.email}`;
             
-            // 開啟即時監聽
             unsubscribeSnapshot = db.collection("attendance_users").doc(currentUserUid).onSnapshot(doc => {
                 if (doc.exists) {
                     const cloudData = doc.data();
@@ -336,7 +375,9 @@
                         incidents: cloudData.incidents || {},
                         customEvents: cloudData.customEvents || [],
                         fixedTasks: cloudData.fixedTasks || [],
-                        fixedReminders: cloudData.fixedReminders || []
+                        fixedReminders: cloudData.fixedReminders || [],
+                        guardShifts: cloudData.guardShifts || ["02:00-04:00", "04:00-06:00", "22:00-24:00"],
+                        guardHistory: cloudData.guardHistory || {}
                     };
                 }
                 initSystemRender();
@@ -362,13 +403,13 @@
 
     function handleLogout() { if(confirm("確定登出？")) auth.signOut(); }
 
-    // 初始化與分頁控制
     function initSystemRender() {
         renderMembers();
         renderSettingLists();
         updatePresetSelects();
         if(document.getElementById('tab-calendar').classList.contains('active') && currentSelectMember) { renderWeekCalendar(); }
         if(document.getElementById('tab-report').classList.contains('active')) { refreshReportPage(); }
+        if(document.getElementById('tab-guard').classList.contains('active')) { loadGuardPage(); }
         if(document.getElementById('tab-board').classList.contains('active')) { renderTodayBoard(); }
     }
 
@@ -378,16 +419,15 @@
         document.getElementById(tabId).classList.add('active');
         document.getElementById('btn-' + tabId).classList.add('active');
         
-        // 分頁切換觸發器
         if(tabId === 'tab-report') { refreshReportPage(); }
+        if(tabId === 'tab-guard') { loadGuardPage(); }
         if(tabId === 'tab-board') { renderTodayBoard(); }
         window.scrollTo(0,0);
     }
 
     // --- 1. 人員管理 ---
     function renderMembers() {
-        const listDiv = document.getElementById('member-list');
-        listDiv.innerHTML = '';
+        const listDiv = document.getElementById('member-list'); listDiv.innerHTML = '';
         if(!data.members || data.members.length === 0) { listDiv.innerHTML = '<p style="color:#64748b; text-align:center;">暫無人員</p>'; return; }
         
         data.members.forEach(m => {
@@ -397,7 +437,20 @@
             const card = document.createElement('div'); card.className = 'member-card';
             card.onclick = () => { currentSelectMember = name; switchTab('tab-calendar'); openWeekView(name); };
             
-            if(role) { card.innerHTML += `<span class="tag-badge">${role}</span>`; }
+            // 點擊職位標籤可直接修改
+            const badge = document.createElement('span'); badge.className = 'tag-badge';
+            badge.innerText = role ? role : '+ 職位';
+            badge.onclick = (e) => {
+                e.stopPropagation(); // 阻止觸發開啟週曆
+                const newRole = prompt(`請輸入 ${name} 的新職位標籤：`, role);
+                if(newRole !== null) {
+                    if(!data.memberRoles) data.memberRoles = {};
+                    data.memberRoles[name] = newRole.trim();
+                    saveData();
+                }
+            };
+            
+            card.appendChild(badge);
             card.innerHTML += `<div class="name">${name}</div>`;
             
             const delBtn = document.createElement('div'); delBtn.className = 'delete-btn'; delBtn.innerText = '×';
@@ -408,8 +461,7 @@
     }
 
     function addMember() {
-        const nameInput = document.getElementById('new-member-name');
-        const roleInput = document.getElementById('new-member-role');
+        const nameInput = document.getElementById('new-member-name'); const roleInput = document.getElementById('new-member-role');
         const name = nameInput.value.trim(); const role = roleInput.value.trim();
         if(!name) return alert("請輸入姓名");
         
@@ -427,62 +479,49 @@
             data.members = data.members.filter(m => (typeof m === 'object' ? m.name !== name : m !== name));
             if(data.memberRoles?.[name]) delete data.memberRoles[name];
             if(data.incidents?.[name]) delete data.incidents[name];
+            if(data.guardHistory?.[name]) delete data.guardHistory[name];
             if(currentSelectMember === name) currentSelectMember = '';
             saveData();
         }
     }
 
-    // --- 2. 核心精簡週曆功能 ---
-    let currentActiveDateStr = '';
+    // --- 2. 週曆功能 ---
     function openWeekView(name) {
         document.getElementById('calendar-no-select').style.display = 'none';
         document.getElementById('calendar-view').style.display = 'block';
         document.getElementById('current-member-title').innerText = `${name} 的週月曆紀錄`;
-        currentCalDate = new Date(); // 重設為當週
+        currentCalDate = new Date(); 
         renderWeekCalendar();
     }
-
     function toggleWeekend() { showWeekend = document.getElementById('show-weekend-chk').checked; renderWeekCalendar(); }
     function changeWeek(dir) { currentCalDate.setDate(currentCalDate.getDate() + (dir * 7)); renderWeekCalendar(); }
-
-    function getMonday(d) {
-        d = new Date(d); const day = d.getDay();
-        const diff = d.getDate() - day + (day == 0 ? -6 : 1);
-        return new Date(d.setDate(diff));
-    }
+    function getMonday(d) { d = new Date(d); const day = d.getDay(); const diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
 
     function renderWeekCalendar() {
         const container = document.getElementById('week-container'); container.innerHTML = '';
-        const monday = getMonday(currentCalDate);
-        
-        const endDayCount = showWeekend ? 7 : 5;
-        const weekGrid = document.createElement('div');
-        weekGrid.className = `week-grid ${showWeekend ? 'show-weekend' : ''}`;
+        const monday = getMonday(currentCalDate); const endDayCount = showWeekend ? 7 : 5;
+        const weekGrid = document.createElement('div'); weekGrid.className = `week-grid ${showWeekend ? 'show-weekend' : ''}`;
         
         const weeksLabel = ['一', '二', '三', '四', '五', '六', '日'];
         for(let i=0; i<endDayCount; i++) {
-            const label = document.createElement('div'); label.className = 'week-day-label';
-            label.innerText = `週${weeksLabel[i]}`; weekGrid.appendChild(label);
+            const label = document.createElement('div'); label.className = 'week-day-label'; label.innerText = `週${weeksLabel[i]}`; weekGrid.appendChild(label);
         }
 
         const memberIncidents = data.incidents[currentSelectMember] || {};
-
         for(let i=0; i<endDayCount; i++) {
-            const cellDate = new Date(monday); cellDate.setDate(monday.getDate() + i);
-            const dateStr = cellDate.toISOString().split('T')[0];
-            
+            const cellDate = new Date(monday); cellDate.setDate(monday.getDate() + i); const dateStr = cellDate.toISOString().split('T')[0];
             const cell = document.createElement('div'); cell.className = 'week-cell';
             cell.innerHTML = `<div class="date-num">${cellDate.getMonth()+1}/${cellDate.getDate()}</div>`;
             
             const evtsDiv = document.createElement('div'); evtsDiv.className = 'week-events';
             const dayEvts = memberIncidents[dateStr] || [];
-            
-            // 相容舊資料字串格式，自動升級為陣列結構
             const standardizedEvts = Array.isArray(dayEvts) ? dayEvts : [{label: dayEvts, isAllDay: true}];
 
             standardizedEvts.forEach((evt, idx) => {
                 if(!evt.label) return;
-                const tag = document.createElement('div'); tag.className = 'event-tag';
+                const tag = document.createElement('div'); 
+                // 如果是衛哨勤務，套用藍色專屬外觀
+                tag.className = `event-tag ${evt.label.includes('衛哨') ? 'guard-tag' : ''}`;
                 const timeT = evt.isAllDay ? '整天' : `${evt.startTime}`;
                 tag.innerHTML = `<span>${evt.label}(${timeT})</span>`;
                 
@@ -490,25 +529,25 @@
                 del.onclick = (e) => {
                     e.stopPropagation();
                     if(confirm(`刪除「${evt.label}」？`)) {
+                        // 如果刪除的是衛哨，要扣回歷史扣除次數
+                        if(evt.label.includes('衛哨') && data.guardHistory?.[currentSelectMember] > 0) {
+                            data.guardHistory[currentSelectMember]--;
+                        }
                         data.incidents[currentSelectMember][dateStr].splice(idx, 1);
                         saveData();
                     }
                 };
                 tag.appendChild(del); evtsDiv.appendChild(tag);
             });
-
             cell.appendChild(evtsDiv);
             cell.onclick = () => { currentActiveDateStr = dateStr; openIncidentModal(dateStr); };
             weekGrid.appendChild(cell);
         }
-        
         container.appendChild(weekGrid);
-        
         const sat = new Date(monday); sat.setDate(monday.getDate() + 4);
         document.getElementById('week-date-range').innerText = `${monday.getMonth()+1}/${monday.getDate()} ~ ${sat.getMonth()+1}/${sat.getDate()}`;
     }
 
-    // 週曆彈窗控制
     function openIncidentModal(dateStr) {
         document.getElementById('modal-title').innerText = `${currentSelectMember} (${dateStr})`;
         document.getElementById('modal-label').value = ''; document.getElementById('modal-type').value = 'allDay';
@@ -516,9 +555,7 @@
         document.getElementById('incident-modal').style.display = 'flex';
     }
     function closeIncidentModal() { document.getElementById('incident-modal').style.display = 'none'; }
-    function toggleModalTimeFields() {
-        document.getElementById('modal-time-range-fields').style.display = (document.getElementById('modal-type').value === 'range') ? 'flex' : 'none';
-    }
+    function toggleModalTimeFields() { document.getElementById('modal-time-range-fields').style.display = (document.getElementById('modal-type').value === 'range') ? 'flex' : 'none'; }
 
     function applyPresetToModal() {
         const val = document.getElementById('modal-preset-select').value; if(!val) return;
@@ -542,19 +579,14 @@
             newEvt.endTime = document.getElementById('modal-end-time').value;
         }
         if(!data.incidents[currentSelectMember]) data.incidents[currentSelectMember] = {};
-        if(!Array.isArray(data.incidents[currentSelectMember][currentActiveDateStr])) {
-            // 相容並清除舊資料字串
-            data.incidents[currentSelectMember][currentActiveDateStr] = [];
-        }
+        if(!Array.isArray(data.incidents[currentSelectMember][currentActiveDateStr])) data.incidents[currentSelectMember][currentActiveDateStr] = [];
         data.incidents[currentSelectMember][currentActiveDateStr].push(newEvt);
         saveData(); closeIncidentModal();
     }
 
-    // --- 3. 設定中心頁面運作 ---
+    // --- 3. 設定中心 ---
     function addCustomEventType() {
-        const label = document.getElementById('custom-evt-label').value.trim();
-        const start = document.getElementById('custom-evt-start').value;
-        const end = document.getElementById('custom-evt-end').value;
+        const label = document.getElementById('custom-evt-label').value.trim(); const start = document.getElementById('custom-evt-start').value; const end = document.getElementById('custom-evt-end').value;
         if(!label) return alert("請輸入名稱");
         data.customEvents.push({label, startTime: start, endTime: end}); saveData();
         document.getElementById('custom-evt-label').value = '';
@@ -564,56 +596,38 @@
         data.fixedTasks.push(name); saveData(); document.getElementById('fixed-task-name').value = '';
     }
     function addFixedReminder() {
-        const day = document.getElementById('remind-day').value;
-        const time = document.getElementById('remind-time').value;
-        const text = document.getElementById('remind-text').value.trim();
+        const day = document.getElementById('remind-day').value; const time = document.getElementById('remind-time').value; const text = document.getElementById('remind-text').value.trim();
         if(!text) return alert("請輸入提醒內容");
         data.fixedReminders.push({day: parseInt(day), time, text}); saveData();
         document.getElementById('remind-text').value = '';
     }
-
     function deleteSettingItem(field, index) { data[field].splice(index, 1); saveData(); }
 
     function renderSettingLists() {
         const cList = document.getElementById('custom-event-list'); cList.innerHTML = '';
-        data.customEvents.forEach((item, idx) => {
-            cList.innerHTML += `<li class="setting-item"><span>${item.label} (${item.startTime}~${item.endTime})</span><button onclick="deleteSettingItem('customEvents', ${idx})">刪除</button></li>`;
-        });
+        data.customEvents.forEach((item, idx) => { cList.innerHTML += `<li class="setting-item"><span>${item.label} (${item.startTime}~${item.endTime})</span><button onclick="deleteSettingItem('customEvents', ${idx})">刪除</button></li>`; });
         const tList = document.getElementById('fixed-task-list'); tList.innerHTML = '';
-        data.fixedTasks.forEach((item, idx) => {
-            tList.innerHTML += `<li class="setting-item"><span>${item}</span><button onclick="deleteSettingItem('fixedTasks', ${idx})">刪除</button></li>`;
-        });
-        const rList = document.getElementById('reminder-list'); rList.innerHTML = '';
-        const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
-        data.fixedReminders.forEach((item, idx) => {
-            rList.innerHTML += `<li class="setting-item"><span>週${weekLabels[item.day]} ${item.time} - ${item.text}</span><button onclick="deleteSettingItem('fixedReminders', ${idx})">刪除</button></li>`;
-        });
+        data.fixedTasks.forEach((item, idx) => { tList.innerHTML += `<li class="setting-item"><span>${item}</span><button onclick="deleteSettingItem('fixedTasks', ${idx})">刪除</button></li>`; });
+        const rList = document.getElementById('reminder-list'); rList.innerHTML = ''; const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
+        data.fixedReminders.forEach((item, idx) => { rList.innerHTML += `<li class="setting-item"><span>週${weekLabels[item.day]} ${item.time} - ${item.text}</span><button onclick="deleteSettingItem('fixedReminders', ${idx})">刪除</button></li>`; });
     }
 
     function updatePresetSelects() {
         const mSelect = document.getElementById('modal-preset-select'); mSelect.innerHTML = '<option value="">-- 請選擇 --</option>';
         const dSelect = document.getElementById('dispatch-preset-select'); dSelect.innerHTML = '<option value="">-- 手動輸入或選擇種類 --</option>';
-        
-        data.customEvents.forEach((item, idx) => {
-            const opt = `<option value="custom-${idx}">自訂: ${item.label}</option>`;
-            mSelect.innerHTML += opt; dSelect.innerHTML += opt;
-        });
-        data.fixedTasks.forEach((item, idx) => {
-            mSelect.innerHTML += `<option value="fixed-${idx}">固定: ${item}</option>`;
-        });
+        data.customEvents.forEach((item, idx) => { const opt = `<option value="custom-${idx}">自訂: ${item.label}</option>`; mSelect.innerHTML += opt; dSelect.innerHTML += opt; });
+        data.fixedTasks.forEach((item, idx) => { mSelect.innerHTML += `<option value="fixed-${idx}">固定: ${item}</option>`; });
     }
-
     function syncDispatchInput() {
         const val = document.getElementById('dispatch-preset-select').value; if(!val) return;
         const [type, index] = val.split('-');
         if(type === 'custom') {
             const item = data.customEvents[index]; document.getElementById('dispatch-label').value = item.label;
-            document.getElementById('free-start').value = item.startTime; document.getElementById('free-end').value = item.endTime;
-            checkFreeMembers();
+            document.getElementById('free-start').value = item.startTime; document.getElementById('free-end').value = item.endTime; checkFreeMembers();
         }
     }
 
-    // --- 4. 報表彙整與智慧派工 ---
+    // --- 4. 報表與智慧派工 ---
     let actualPresentMembers = new Set();
     function timeToMinutes(t) { if(!t) return 0; const p = t.split(':'); return parseInt(p[0])*60 + parseInt(p[1]); }
 
@@ -623,10 +637,8 @@
         actualPresentMembers = new Set();
 
         data.members.forEach(m => {
-            const name = (typeof m === 'object') ? m.name : m;
-            const evts = data.incidents?.[name]?.[targetDate] || [];
+            const name = (typeof m === 'object') ? m.name : m; const evts = data.incidents?.[name]?.[targetDate] || [];
             const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
-            
             let isAbsent = false;
             for(let e of stdEvts) {
                 if(e.isAllDay) { isAbsent = true; break; }
@@ -644,9 +656,7 @@
             const div = document.createElement('div'); div.className = 'checkbox-item';
             div.innerHTML = `<input type="checkbox" id="rep-chk-${name}" ${actualPresentMembers.has(name)?'checked':''}>
                              <label for="rep-chk-${name}">${name}</label>${role ? `<span class="role">${role}</span>`:''}`;
-            div.querySelector('input').onchange = (e) => {
-                if(e.target.checked) actualPresentMembers.add(name); else actualPresentMembers.delete(name); generateReport();
-            };
+            div.querySelector('input').onchange = (e) => { if(e.target.checked) actualPresentMembers.add(name); else actualPresentMembers.delete(name); generateReport(); };
             container.appendChild(div);
         });
     }
@@ -657,8 +667,7 @@
         let incidentMap = {};
 
         data.members.forEach(m => {
-            const name = (typeof m === 'object') ? m.name : m;
-            const evts = data.incidents?.[name]?.[targetDate] || [];
+            const name = (typeof m === 'object') ? m.name : m; const evts = data.incidents?.[name]?.[targetDate] || [];
             const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
             stdEvts.forEach(e => {
                 if(e.isAllDay || (setMin >= timeToMinutes(e.startTime) && setMin < timeToMinutes(e.endTime))) {
@@ -682,27 +691,21 @@
 
         let txt = `【${targetDate} 集合回報】\n集合時間：${setTime}\n---------------------------\n`;
         for(let t in incidentMap) { txt += `${t}：${incidentMap[t].join('、')}\n`; }
-        const totalExp = data.members.length; const actualArr = Array.from(actualPresentMembers);
-        txt += `---------------------------\n應到：${totalExp} 人\n實到：${actualArr.length} 人\n實到人員：${actualArr.length>0?actualArr.join('、'):'無'}`;
+        txt += `---------------------------\n應到：${data.members.length} 人\n實到：${actualPresentMembers.size} 人\n實到人員：${actualPresentMembers.size>0?Array.from(actualPresentMembers).join('、'):'無'}`;
         document.getElementById('report-output').innerText = txt;
     }
 
-    function copyReportText() {
-        navigator.clipboard.writeText(document.getElementById('report-output').innerText).then(() => alert("複製成功！"));
-    }
+    function copyReportText() { navigator.clipboard.writeText(document.getElementById('report-output').innerText).then(() => alert("複製成功！")); }
 
     function checkFreeMembers() {
         const targetDate = document.getElementById('report-date').value;
-        const qStart = timeToMinutes(document.getElementById('free-start').value);
-        const qEnd = timeToMinutes(document.getElementById('free-end').value);
+        const qStart = timeToMinutes(document.getElementById('free-start').value); const qEnd = timeToMinutes(document.getElementById('free-end').value);
         const listDiv = document.getElementById('free-members-list'); listDiv.innerHTML = '';
         if(qStart >= qEnd) { listDiv.innerHTML = '<span style="color:var(--danger)">時間有誤</span>'; return; }
 
         data.members.forEach(m => {
             const name = (typeof m === 'object') ? m.name : m; const role = data.memberRoles?.[name] || '';
-            const evts = data.incidents?.[name]?.[targetDate] || [];
-            const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
-            
+            const evts = data.incidents?.[name]?.[targetDate] || []; const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
             let isFree = true;
             for(let e of stdEvts) {
                 if(e.isAllDay) { isFree = false; break; }
@@ -719,13 +722,10 @@
     }
 
     function executeDispatch() {
-        const targetDate = document.getElementById('report-date').value;
-        const start = document.getElementById('free-start').value; const end = document.getElementById('free-end').value;
-        const label = document.getElementById('dispatch-label').value.trim();
+        const targetDate = document.getElementById('report-date').value; const start = document.getElementById('free-start').value; const end = document.getElementById('free-end').value; const label = document.getElementById('dispatch-label').value.trim();
         if(!label) return alert("請輸入指派名稱");
-        
         const chks = document.querySelectorAll('input[name="free-chk"]:checked');
-        if(chks.length === 0) return alert("請至少勾選一員 (預設為不勾選)");
+        if(chks.length === 0) return alert("請至少勾選一員");
 
         chks.forEach(box => {
             const name = box.value; if(!data.incidents[name]) data.incidents[name] = {};
@@ -735,22 +735,209 @@
         saveData(); document.getElementById('dispatch-label').value = ''; alert("指派成功！");
     }
 
-    // --- 5. 今日看板頁面功能 ---
+    // --- 🌟 5. 全新自動公平排衛哨系統邏輯 🌟 ---
+    function loadGuardPage() {
+        const gDate = document.getElementById('guard-date');
+        if(!gDate.value) gDate.value = new Date().toISOString().split('T')[0];
+        renderGuardShiftsTags();
+        renderGuardTable();
+    }
+
+    function renderGuardShiftsTags() {
+        const container = document.getElementById('guard-shifts-tags'); container.innerHTML = '';
+        if(!data.guardShifts || data.guardShifts.length === 0) { container.innerHTML = '<span style="color:#64748b; font-size:13px;">目前無班次，請從上方自訂。</span>'; return; }
+        
+        data.guardShifts.sort().forEach((shift, idx) => {
+            const tag = document.createElement('span');
+            tag.style = "background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; display:inline-flex; align-items:center; gap:4px;";
+            tag.innerHTML = `${shift} <span style="cursor:pointer; color:#0284c7;" onclick="deleteGuardShift(${idx})">×</span>`;
+            container.appendChild(tag);
+        });
+    }
+
+    function addGuardShift() {
+        const s = document.getElementById('new-guard-start').value;
+        const e = document.getElementById('new-guard-end').value;
+        if(timeToMinutes(s) >= timeToMinutes(e)) return alert("結束時間必須大於開始時間");
+        const shiftStr = `${s}-${e}`;
+        if(!data.guardShifts) data.guardShifts = [];
+        if(data.guardShifts.includes(shiftStr)) return alert("此班次已存在");
+        data.guardShifts.push(shiftStr);
+        saveData();
+    }
+
+    function deleteGuardShift(idx) {
+        data.guardShifts.splice(idx, 1);
+        saveData();
+    }
+
+    function renderGuardTable() {
+        const targetDate = document.getElementById('guard-date').value;
+        const tbody = document.getElementById('guard-table-body'); tbody.innerHTML = '';
+        if(!data.guardShifts || data.guardShifts.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">請先新增班次時段</td></tr>'; return;
+        }
+
+        // 下拉選單人員清單
+        let mOptions = '<option value="">-- 尚未排哨 --</option>';
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            mOptions += `<option value="${name}">${name}</option>`;
+        });
+
+        data.guardShifts.sort().forEach(shift => {
+            const [start, end] = shift.split('-');
+            
+            // 找出今天已經排定這個班次衛哨的人
+            let currentGuard = '';
+            data.members.forEach(m => {
+                const name = (typeof m === 'object') ? m.name : m;
+                const evts = data.incidents?.[name]?.[targetDate] || [];
+                evts.forEach(e => {
+                    if(e.label === `衛哨[${shift}]`) { currentGuard = name; }
+                });
+            });
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:bold; color:var(--primary);">${shift}</td>
+                <td style="font-weight:bold; font-size:15px; color:${currentGuard?'#0369a1':'#94a3b8'};">${currentGuard ? currentGuard : '❌ 暫無'}</td>
+                <td>
+                    <select onchange="manualChangeGuard('${shift}', this.value)" style="padding:4px; font-size:13px;">
+                        ${mOptions.replace(`value="${currentGuard}"`, `value="${currentGuard}" selected`)}
+                    </select>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 手動下拉式微調更換衛哨
+    function manualChangeGuard(shift, newGuard) {
+        const targetDate = document.getElementById('guard-date').value;
+        const [start, end] = shift.split('-');
+
+        // 1. 先清除今天所有人在這個時段的衛哨
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            if(data.incidents[name]?.[targetDate]) {
+                const oldIdx = data.incidents[name][targetDate].findIndex(e => e.label === `衛哨[${shift}]`);
+                if(oldIdx !== -1) {
+                    data.incidents[name][targetDate].splice(oldIdx, 1);
+                    if(data.guardHistory?.[name] > 0) data.guardHistory[name]--; // 扣回次數
+                }
+            }
+        });
+
+        // 2. 指派給新的人
+        if(newGuard) {
+            if(!data.incidents[newGuard]) data.incidents[newGuard] = {};
+            if(!data.incidents[newGuard][targetDate]) data.incidents[newGuard][targetDate] = [];
+            data.incidents[newGuard][targetDate].push({ label: `衛哨[${shift}]`, isAllDay: false, startTime: start, endTime: end });
+            
+            if(!data.guardHistory) data.guardHistory = {};
+            data.guardHistory[newGuard] = (data.guardHistory[newGuard] || 0) + 1;
+        }
+        saveData();
+        alert("衛哨微調更新成功！");
+    }
+
+    // 🎲 核心功能：一鍵自動公平排哨演算法
+    function autoAssignGuards() {
+        const targetDate = document.getElementById('guard-date').value;
+        if(!data.members || data.members.length === 0) return alert("請先至人員管理新增人員");
+        if(!data.guardShifts || data.guardShifts.length === 0) return alert("請先設定班次時段");
+
+        if(!confirm(`確定要自動產生 ${targetDate} 的衛哨排班嗎？\n這將會覆蓋原本當天已排的舊衛哨紀錄。`)) return;
+
+        // A. 初始化與清除當日已排衛哨
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            if(data.incidents[name]?.[targetDate]) {
+                const filtered = data.incidents[name][targetDate].filter(e => {
+                    if(e.label.startsWith("衛哨[")) {
+                        if(data.guardHistory?.[name] > 0) data.guardHistory[name]--; // 公平回退
+                        return false;
+                    }
+                    return true;
+                });
+                data.incidents[name][targetDate] = filtered;
+            }
+        });
+
+        // B. 篩選當天可用人員 (排除當天有「整天事故」例如請假、全天公差的人)
+        let availableCandidates = [];
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            const evts = data.incidents?.[name]?.[targetDate] || [];
+            let isAllDayAbsent = false;
+            evts.forEach(e => { if(e.isAllDay) isAllDayAbsent = true; });
+            
+            if(!isAllDayAbsent) {
+                // 順便確保有初始歷史次數
+                if(!data.guardHistory) data.guardHistory = {};
+                if(!data.guardHistory[name]) data.guardHistory[name] = 0;
+                availableCandidates.push(name);
+            }
+        });
+
+        if(availableCandidates.length === 0) return alert("當天所有人都有全天事故(休假等)，無可用排哨人力！");
+
+        // 今天已經被排過哨的人 (嚴格遵守：一人一天只能一班衛哨)
+        let assignedToday = new Set();
+
+        // C. 開始依序分配班次
+        // 排序班次確保公平
+        const sortedShifts = [...data.guardShifts].sort();
+
+        for(let shift of sortedShifts) {
+            const [start, end] = shift.split('-');
+
+            // 1. 從「今天還沒排過哨的人」裡面挑選
+            let pool = availableCandidates.filter(name => !assignedToday.has(name));
+            if(pool.length === 0) {
+                // 如果人手真的不夠用，才打破限制，重新開放所有可用名單（但原則上題目要求一人一班，若人夠多就不會發生）
+                pool = [...availableCandidates]; 
+            }
+
+            // 2. 🌟 關鍵核心：依據「歷史累計站哨次數」進行升冪排序，最少站的人排最前面 🌟
+            pool.sort((a, b) => (data.guardHistory[a] || 0) - (data.guardHistory[b] || 0));
+
+            // 3. 挑選次數最少的第一位
+            const chosenOne = pool[0];
+
+            // 4. 寫入雲端勤務結構
+            if(!data.incidents[chosenOne]) data.incidents[chosenOne] = {};
+            if(!data.incidents[chosenOne][targetDate]) data.incidents[chosenOne][targetDate] = [];
+            data.incidents[chosenOne][targetDate].push({
+                label: `衛哨[${shift}]`,
+                isAllDay: false,
+                startTime: start,
+                endTime: end
+            });
+
+            // 5. 累加次數與今日註記
+            data.guardHistory[chosenOne] = (data.guardHistory[chosenOne] || 0) + 1;
+            assignedToday.add(chosenOne);
+        }
+
+        saveData();
+        alert(`🎉 ${targetDate} 衛哨排班自動生成完畢！`);
+    }
+
+
+    // --- 6. 今日看板 ---
     function renderTodayBoard() {
         const bDate = document.getElementById('board-date'); if(!bDate.value) bDate.value = new Date().toISOString().split('T')[0];
         const targetDate = bDate.value; const dateObj = new Date(targetDate); const dayOfWeek = dateObj.getDay();
         
-        // 提醒事項
         const remDiv = document.getElementById('board-reminders'); remDiv.innerHTML = '';
         const todayReminders = data.fixedReminders.filter(r => r.day === dayOfWeek);
         if(todayReminders.length > 0) {
             remDiv.innerHTML = '<strong style="color:var(--warning); font-size:14px;">⚠️ 今日固定提醒事項：</strong>';
-            todayReminders.forEach(r => {
-                remDiv.innerHTML += `<div style="background:#fffbeb; border:1px solid #fde68a; padding:8px; margin-top:4px; border-radius:6px; font-size:13px; color:#b45309;">⏰ 於 ${r.time} 前：${r.text}</div>`;
-            });
+            todayReminders.forEach(r => { remDiv.innerHTML += `<div style="background:#fffbeb; border:1px solid #fde68a; padding:8px; margin-top:4px; border-radius:6px; font-size:13px; color:#b45309;">⏰ 於 ${r.time} 前：${r.text}</div>`; });
         }
 
-        // 看板列表
         const container = document.getElementById('board-events-container'); container.innerHTML = '';
         let hasEvent = false;
 
@@ -761,11 +948,15 @@
             
             if(stdEvts.length > 0 && stdEvts[0].label) {
                 hasEvent = true;
-                const card = document.createElement('div'); card.className = 'board-card';
+                const isGuard = stdEvts.some(e => e.label.includes('衛哨'));
+                const card = document.createElement('div'); 
+                card.className = `board-card ${isGuard ? 'guard-card' : ''}`;
+                
                 let evtsHtml = '';
                 stdEvts.forEach(e => {
                     const timeT = e.isAllDay ? '整天' : `${e.startTime} ~ ${e.endTime}`;
-                    evtsHtml += `<span style="display:inline-block; background:#ffe2e2; color:#ef4444; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:5px; margin-top:4px;">${e.label} (${timeT})</span>`;
+                    const colorStyle = e.label.includes('衛哨') ? 'background:#e0f2fe; color:#0369a1;' : 'background:#ffe2e2; color:#ef4444;';
+                    evtsHtml += `<span style="display:inline-block; ${colorStyle} padding:2px 6px; border-radius:4px; font-size:12px; margin-right:5px; margin-top:4px; font-weight:bold;">${e.label} (${timeT})</span>`;
                 });
                 card.innerHTML = `<div style="font-weight:bold; font-size:14px;">${name} ${role ? `<span style="font-size:11px; color:#64748b;">[${role}]</span>`:''}</div><div style="margin-top:2px;">${evtsHtml}</div>`;
                 container.appendChild(card);
