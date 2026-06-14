@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>人員事故與出勤管理系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>人員出勤與事故智慧管理系統</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -18,67 +18,93 @@
             --text: #1e293b;
             --border: #e2e8f0;
             --danger: #ef4444;
-            --danger-hover: #dc2626;
             --success: #10b981;
-            --success-hover: #059669;
+            --warning: #f59e0b;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 60px; }
         .container { max-width: 1000px; margin: 0 auto; display: none; } 
-        h1, h2, h3 { color: #0f172a; }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
-        .tab-btn { padding: 10px 20px; border: none; background: #e2e8f0; cursor: pointer; border-radius: 6px 6px 0 0; font-weight: bold; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .panel { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
+        
+        /* 手機版底部導覽列 */
+        .nav-tabs { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); z-index: 999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); overflow-x: auto; }
+        .tab-btn { flex: 1; min-width: 75px; padding: 12px 5px; border: none; background: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #64748b; text-align: center; white-space: nowrap; }
+        .tab-btn.active { color: var(--primary); border-top: 3px solid var(--primary); background: #f8fafc; }
+        
+        .panel { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: none; margin-bottom: 20px; }
         .panel.active { display: block; }
-        .form-group { margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: #fff; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s; }
         button:hover { background: var(--primary-hover); }
         
-        /* 登入介面樣式 */
-        .auth-container { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .auth-header { text-align: center; margin-bottom: 20px; }
-        .logout-btn { background: #64748b; font-size: 13px; padding: 6px 12px; float: right; margin-top: -45px; }
+        /* 登入樣式 */
+        .auth-container { max-width: 400px; margin: 60px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .logout-btn { background: #64748b; font-size: 12px; padding: 6px 12px; float: right; margin-top: -42px; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 20px; }
-        .member-card { background: #f1f5f9; padding: 15px; border-radius: 6px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; display: flex; justify-content: center; align-items: center; min-height: 50px; font-weight: 500; }
-        .member-card:hover { border-color: var(--primary); background: #e0e7ff; }
-        .delete-btn { position: absolute; top: 4px; right: 4px; background: #cbd5e1; color: #475569; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; line-height: 20px; text-align: center; cursor: pointer; font-weight: bold; }
-        .delete-btn:hover { background: var(--danger); color: white; }
+        /* 人員卡片 */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 15px; }
+        .member-card { background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid transparent; position: relative; min-height: 70px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .member-card .name { font-weight: bold; font-size: 15px; margin-top: 8px; }
+        .member-card .tag-badge { position: absolute; top: 4px; left: 4px; background: #e2e8f0; color: #475569; font-size: 10px; padding: 1px 4px; border-radius: 4px; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .member-card .delete-btn { position: absolute; top: 4px; right: 4px; background: #cbd5e1; color: #475569; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; line-height: 18px; text-align: center; font-weight: bold; }
         
-        /* 日曆樣式 */
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-        .calendar-day-label { font-weight: bold; padding: 5px; background: #e2e8f0; }
-        .calendar-cell { min-height: 95px; border: 1px solid var(--border); padding: 5px; text-align: left; background: #fff; cursor: pointer; position: relative; }
-        .calendar-cell:hover { background: #f8fafc; }
-        .calendar-cell .date-num { font-size: 12px; color: #64748b; margin-bottom: 2px; }
-        .event-tags-container { display: flex; flex-direction: column; gap: 2px; max-height: 70px; overflow-y: auto; }
-        .event-tag { font-size: 11px; background: #fee2e2; color: #ef4444; padding: 2px 4px; border-radius: 3px; display: flex; justify-content: space-between; align-items: center; }
-        .event-del { color: #94a3b8; font-weight: bold; margin-left: 4px; cursor: pointer; }
+        /* 週曆樣式 */
+        .week-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f1f5f9; padding: 8px; border-radius: 6px; }
+        .week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .week-grid.show-weekend { grid-template-columns: repeat(7, 1fr); }
+        .week-day-label { font-weight: bold; padding: 6px 2px; background: #e2e8f0; font-size: 12px; text-align: center; border-radius: 4px; }
+        .week-cell { min-height: 140px; border: 1px solid var(--border); padding: 4px; background: #fff; cursor: pointer; border-radius: 4px; display: flex; flex-direction: column; }
+        .week-cell .date-num { font-size: 11px; color: #64748b; font-weight: bold; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
+        .week-events { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+        
+        /* 事故標籤 */
+        .event-tag { font-size: 11px; background: #fee2e2; color: #ef4444; padding: 2px; border-radius: 3px; display: flex; justify-content: space-between; align-items: center; line-height: 1.2; word-break: break-all; }
+        .event-del { color: #94a3b8; font-weight: bold; margin-left: 3px; cursor: pointer; padding: 0 2px; }
         .event-del:hover { color: var(--danger); }
         
-        /* 彙整頁面樣式 */
-        .summary-box { background: #f1f5f9; padding: 15px; border-radius: 6px; white-space: pre-wrap; font-family: monospace; margin-top: 15px; border: 1px solid var(--border); }
-        .member-checkbox-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; }
-        .checkbox-item { display: flex; align-items: center; gap: 5px; background: #fff; padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
-        .checkbox-item input { width: auto; }
-        
-        .dispatch-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px; margin-top: 15px; }
-        .free-checkbox-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 10px 0; }
-        .free-item { display: flex; align-items: center; gap: 5px; background: #dcfce7; color: #166534; padding: 6px; border-radius: 4px; font-size: 13px; font-weight: 500; }
-        .free-item input { width: auto; cursor: pointer; }
+        /* 清單列表（設定頁面用） */
+        .setting-list { list-style: none; padding: 0; margin: 10px 0; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f1f5f9; border-radius: 6px; margin-bottom: 6px; font-size: 13px; }
+        .setting-item button { padding: 4px 8px; font-size: 12px; background: var(--danger); }
 
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+        /* 派工列表 */
+        .member-checkbox-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 10px 0; }
+        .checkbox-item { display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-weight: 500; }
+        .checkbox-item input { width: auto; height: 16px; width: 16px; }
+        .checkbox-item .role { font-size: 10px; color: #64748b; margin-left: auto; background: #e2e8f0; padding: 1px 3px; border-radius: 3px; }
+
+        .summary-box { background: #f1f5f9; padding: 12px; border-radius: 6px; white-space: pre-wrap; font-family: monospace; font-size: 13px; margin-top: 10px; border: 1px solid var(--border); }
+        .board-card { border-left: 4px solid var(--primary); background: #f8fafc; padding: 10px; margin-bottom: 8px; border-radius: 0 6px 6px 0; }
+
+        /* 彈窗 */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; }
+
+        /* iPhone 響應式優化 */
+        @media (max-width: 480px) {
+            body { padding: 8px; padding-bottom: 75px; }
+            .week-grid { gap: 3px; }
+            .week-cell { min-height: 110px; padding: 2px; }
+            .week-day-label { font-size: 11px; padding: 4px 1px; }
+            .event-tag { font-size: 9px; padding: 1px; }
+            .logout-btn { float: none; margin-top: 10px; width: 100%; text-align: center; }
+            button { padding: 12px; width: 100%; }
+            .form-row { flex-direction: column; gap: 5px; }
+            .form-row button { width: 100%; }
+            .checkbox-item { padding: 12px 8px; }
+        }
     </style>
 </head>
 <body>
 
 <div id="auth-panel" class="auth-container">
-    <div class="auth-header">
-        <h2>人員管理系統 - 登入</h2>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2>勤務事故智慧管理系統</h2>
+        <p style="color: #64748b; font-size: 13px;">多帳號獨立雲端版</p>
     </div>
     <div class="form-group">
         <label>電子信箱 (Email)</label>
@@ -93,118 +119,166 @@
 </div>
 
 <div id="main-app" class="container">
-    <h1>人員出勤與事故管理系統</h1>
-    <p style="font-size:13px; color:#475569; margin-top:-10px;" id="user-display-email">目前登入：</p>
-    <button class="logout-btn" onclick="handleLogout()">登出系統</button>
+    <div style="margin-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 20px;">勤務管理系統</h2>
+        <p style="font-size:11px; color:#64748b; margin: 2px 0 0 0;" id="user-display-email">載入中...</p>
+    </div>
     
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab(event, 'member-tab')">人員與日曆</button>
-        <button class="tab-btn" onclick="switchTab(event, 'report-tab'); initReportPage();">本日彙整報表與智慧派工</button>
+        <button class="tab-btn active" id="btn-tab-member" onclick="switchTab('tab-member')">人員管理</button>
+        <button class="tab-btn" id="btn-tab-calendar" onclick="switchTab('tab-calendar')">個人週曆</button>
+        <button class="tab-btn" id="btn-tab-setting" onclick="switchTab('tab-setting')">設定中心</button>
+        <button class="tab-btn" id="btn-tab-report" onclick="switchTab('tab-report')">報表派工</button>
+        <button class="tab-btn" id="btn-tab-board" onclick="switchTab('tab-board')">今日看板</button>
     </div>
 
-    <div id="member-tab" class="panel active">
-        <div id="member-home">
-            <h3>新增人員</h3>
-            <div class="form-group" style="display: flex; gap: 10px;">
-                <input type="text" id="new-member-name" placeholder="輸入人員姓名">
-                <button onclick="addMember()">新增</button>
-            </div>
-            <h3>人員列表（點擊卡片進入月曆，點右上角 X 刪除）</h3>
-            <div id="member-list" class="grid">將由個人雲端載入中...</div>
+    <div id="tab-member" class="panel active">
+        <h3>新增人員</h3>
+        <div class="form-group">
+            <input type="text" id="new-member-name" placeholder="輸入人員姓名" style="margin-bottom: 8px;">
+            <input type="text" id="new-member-role" placeholder="輸入職位標籤 (例如: 文書、主計，可留空)">
+            <button onclick="addMember()" style="margin-top: 8px; width:100%;">新增人員</button>
         </div>
+        <h3>人員列表 (點擊卡片開啟週曆)</h3>
+        <div id="member-list" class="grid"></div>
+    </div>
 
-        <div id="member-calendar-view" style="display: none; margin-top: 20px;">
-            <button onclick="backToMemberHome()" style="background: #64748b; margin-bottom: 15px;">← 返回人員列表</button>
-            <h2 id="current-member-title">某某某 的月曆</h2>
+    <div id="tab-calendar" class="panel">
+        <div id="calendar-no-select" style="text-align:center; color:#64748b; padding:30px 0;">
+            請先到「人員管理」分頁點選一位人員來檢視週曆。
+        </div>
+        <div id="calendar-view" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 id="current-member-title" style="margin:0;">某某某 的週曆</h3>
+                <label style="display:inline-flex; align-items:center; gap:4px; margin:0; font-size:12px;">
+                    <input type="checkbox" id="show-weekend-chk" onchange="toggleWeekend()" style="width:auto;"> 顯示六日
+                </label>
+            </div>
             
-            <div class="calendar-header">
-                <button onclick="changeMonth(-1)">上個月</button>
-                <h3 id="calendar-month-year">2026 年 6 月</h3>
-                <button onclick="changeMonth(1)">下個月</button>
+            <div class="week-header" style="margin-top:10px;">
+                <button onclick="changeWeek(-1)" style="padding:6px 12px; font-size:12px;">上一週</button>
+                <span id="week-date-range" style="font-size:13px; font-weight:bold;">2026/06/01 ~ 06/05</span>
+                <button onclick="changeWeek(1)" style="padding:6px 12px; font-size:12px;">下一週</button>
             </div>
-            <div id="calendar-container"></div>
+            <div id="week-container"></div>
         </div>
     </div>
 
-    <div id="report-tab" class="panel">
-        <h2>當日出勤與事故彙整</h2>
-        <div class="form-group">
-            <label><strong>1. 選擇彙整日期：</strong></label>
-            <input type="date" id="report-date" onchange="initReportPage()">
+    <div id="tab-setting" class="panel">
+        <h3>1. 自訂快速事故種類</h3>
+        <div class="form-row">
+            <input type="text" id="custom-evt-label" placeholder="名稱 (如: 資訊中心)" style="flex:2;">
+            <input type="time" id="custom-evt-start" value="07:00" style="flex:1;">
+            <input type="time" id="custom-evt-end" value="17:30" style="flex:1;">
+            <button onclick="addCustomEventType()">新增</button>
         </div>
-        <div class="form-group">
-            <label><strong>2. 設定集合時間：</strong></label>
-            <input type="time" id="report-time" value="08:00" onchange="initReportPage()">
+        <ul id="custom-event-list" class="setting-list"></ul>
+        <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+
+        <h3>2. 每週固定勤務分類</h3>
+        <p style="font-size:12px; color:#64748b; margin-top:-5px;">設定好後可在週曆一鍵指派人員進此勤務中。</p>
+        <div class="form-row">
+            <input type="text" id="fixed-task-name" placeholder="例：尋車、環境、下菜" style="flex:3;">
+            <button onclick="addFixedTask()">新增分類</button>
         </div>
+        <ul id="fixed-task-list" class="setting-list"></ul>
+        <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+
+        <h3>3. 每週固定提醒事項</h3>
+        <div class="form-row">
+            <select id="remind-day" style="flex:1;">
+                <option value="1">每週一</option><option value="2" selected>每週二</option><option value="3">每週三</option>
+                <option value="4">每週四</option><option value="5">每週五</option><option value="6">每週六</option><option value="0">每週日</option>
+            </select>
+            <input type="time" id="remind-time" value="12:00" style="flex:1;">
+            <input type="text" id="remind-text" placeholder="大兵手冊繳交" style="flex:2;">
+            <button onclick="addFixedReminder()">新增</button>
+        </div>
+        <ul id="reminder-list" class="setting-list"></ul>
+        
+        <button class="logout-btn" onclick="handleLogout()">登出系統</button>
+    </div>
+
+    <div id="tab-report" class="panel">
+        <h3>當日出勤與事故彙整</h3>
+        <div class="form-group"><label>1. 選擇彙整日期：</label><input type="date" id="report-date" onchange="refreshReportPage()"></div>
+        <div class="form-group"><label>2. 設定集合時間：</label><input type="time" id="report-time" value="08:00" onchange="generateReport()"></div>
         <div class="form-group">
-            <label><strong>3. 檢查「實際到場」人員：</strong></label>
+            <label>3. 檢查「實際到場」人員：(系統自動判定，可手動微調)</label>
             <div id="report-attendance-list" class="member-checkbox-list"></div>
         </div>
-        <div class="form-group" style="background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #ffeeba;">
-            <label><strong>4. 突發臨時事故（自由額外追加）：</strong></label>
+        <div class="form-group" style="background: #fff3cd; padding: 12px; border-radius: 6px; border: 1px solid #ffeeba;">
+            <label>4. 突發臨時事故（自由額外追加）：</label>
             <input type="text" id="emergency-input" placeholder="例如：臨時公假:小明" oninput="generateReport()">
         </div>
-        <button onclick="copyReportText()">複製彙整文字檔案</button>
-        <div class="summary-box" id="report-output">報表生成中...</div>
+        <button onclick="copyReportText()" style="width:100%; margin-bottom:15px;">複製彙整文字檔案</button>
+        <div class="summary-box" id="report-output"></div>
 
-        <div class="dispatch-box">
-            <h3>⚡ 智慧空閒人員指派工作</h3>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 13px; font-weight: bold;">查詢時間起</label>
-                    <input type="time" id="free-start" value="09:00" onchange="checkFreeMembers()">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 13px; font-weight: bold;">查詢時間迄</label>
-                    <input type="time" id="free-end" value="12:00" onchange="checkFreeMembers()">
-                </div>
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; margin-top:20px;">
+            <h3 style="color:#166534; margin-top:0;">⚡ 智慧空閒人員指派工作</h3>
+            <div class="form-row">
+                <div style="flex:1;"><label>時間起</label><input type="time" id="free-start" value="09:00" onchange="checkFreeMembers()"></div>
+                <div style="flex:1;"><label>時間迄</label><input type="time" id="free-end" value="12:00" onchange="checkFreeMembers()"></div>
             </div>
-            <div style="margin-bottom: 10px;">
-                <strong>🟢 當下空閒無事故人員：</strong>
-                <div id="free-members-list" class="free-checkbox-list"></div>
+            <div>
+                <strong>🟢 可指派空閒人員 (預設皆不勾選)：</strong>
+                <div id="free-members-list" class="member-checkbox-list"></div>
             </div>
-            <div class="form-group" style="display: flex; gap: 10px; margin-top: 15px;">
-                <input type="text" id="dispatch-label" placeholder="輸入要指派的工作名稱">
-                <button onclick="executeDispatch()" style="background: var(--success); white-space: nowrap;">⚡ 批量指派所選人員</button>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>選擇快速設定的事故種類：</label>
+                <select id="dispatch-preset-select" onchange="syncDispatchInput()"><option value="">-- 手動輸入或選擇種類 --</option></select>
+            </div>
+            <div class="form-row">
+                <input type="text" id="dispatch-label" placeholder="輸入指派工作名稱" style="flex:2;">
+                <button onclick="executeDispatch()" style="background:var(--success);">批量指派</button>
             </div>
         </div>
+    </div>
+
+    <div id="tab-board" class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">📅 全員本日事故動態</h3>
+            <input type="date" id="board-date" onchange="renderTodayBoard()" style="width:140px; padding:6px;">
+        </div>
+        <div id="board-reminders" style="margin-bottom:15px;"></div>
+        <div id="board-events-container"></div>
     </div>
 </div>
 
 <div id="incident-modal" class="modal">
     <div class="modal-content">
-        <h3 id="modal-title" style="margin-top:0;">新增安排</h3>
+        <h3 id="modal-title" style="margin-top:0;">新增行程安排</h3>
+        
+        <div class="form-group" style="background:#e0e7ff; padding:10px; border-radius:6px;">
+            <label style="color:var(--primary);">✨ 快速套用自訂種類 / 固定勤務</label>
+            <select id="modal-preset-select" onchange="applyPresetToModal()"><option value="">-- 請選擇 --</option></select>
+        </div>
+
         <div class="form-group">
-            <label style="font-weight:bold; font-size:14px;">工作/事故名稱：</label>
+            <label>工作/事故/勤務名稱：</label>
             <input type="text" id="modal-label" placeholder="如：割草">
         </div>
         <div class="form-group">
-            <label style="font-weight:bold; font-size:14px;">時間類型：</label>
+            <label>時間類型：</label>
             <select id="modal-type" onchange="toggleModalTimeFields()">
                 <option value="allDay">整天</option>
                 <option value="range">指定時間範圍</option>
             </select>
         </div>
-        <div id="modal-time-range-fields" style="display:none; gap:10px; margin-bottom: 15px;">
-            <div style="flex:1;">
-                <label style="font-size:12px;">開始時間</label>
-                <select id="modal-start-time"></select>
-            </div>
-            <div style="flex:1;">
-                <label style="font-size:12px;">結束時間</label>
-                <select id="modal-end-time"></select>
-            </div>
+        <div id="modal-time-range-fields" class="form-row" style="display:none;">
+            <div style="flex:1;"><label>開始</label><input type="time" id="modal-start-time" value="08:00"></div>
+            <div style="flex:1;"><label>結束</label><input type="time" id="modal-end-time" value="17:00"></div>
         </div>
         <div class="modal-buttons">
             <button onclick="closeIncidentModal()" style="background:#cbd5e1; color:#1e293b;">取消</button>
-            <button onclick="submitIncidentModal()" style="background:var(--primary);">確定新增</button>
+            <button onclick="submitIncidentModal()">確定新增</button>
         </div>
     </div>
 </div>
 
 <script>
     // --------------------------------------------------
-    // ⚠️ 請在此處替換您專屬的 Firebase 金鑰
+    // ⚠️ 請在此處貼上您專屬的 Firebase 金鑰 (firebaseConfig)
     // --------------------------------------------------
     const firebaseConfig = {
 
@@ -228,31 +302,44 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let data = { members: [], incidents: {} };
-    let currentUserUid = ""; // 儲存當前登入使用者的不重複 ID
-    let unsubscribeSnapshot = null; // 用於註銷前一個使用者的即時監聽
+    // 完整的資料結構模型
+    let data = { 
+        members: [],      // ["姓名", ...] 或 [{"name":"姓名","role":"職位"}, ...] 為向下相容，統一用物件處理
+        memberRoles: {},  // {"姓名": "職位標籤"}
+        incidents: {},    // {"姓名": {"日期": [{label, isAllDay, startTime, endTime}]}}
+        customEvents: [], // [{label, startTime, endTime}]
+        fixedTasks: [],   // ["尋車", "環境"]
+        fixedReminders: []// [{day, time, text}]
+    };
+    
+    let currentUserUid = "";
+    let unsubscribeSnapshot = null;
+    let currentCalDate = new Date(); // 當前週曆時間
+    let showWeekend = false;
 
-    // 監聽登入狀態改變 (核心邏輯：依據使用者 UID 切換雲端資料夾)
+    // 監聽登入狀態
     auth.onAuthStateChanged(user => {
-        if (unsubscribeSnapshot) unsubscribeSnapshot(); // 清除舊的監聽
-
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
         if (user) {
-            currentUserUid = user.uid; // 取得當前帳號的專屬 UID
+            currentUserUid = user.uid;
             document.getElementById('auth-panel').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            document.getElementById('user-display-email').innerText = `目前登入帳號：${user.email} (您的專屬資料庫已啟用)`;
+            document.getElementById('user-display-email').innerText = `登入帳號：${user.email}`;
             
-            // 🔒 關鍵改動：路徑綁定為當前登入者的 UID
+            // 開啟即時監聽
             unsubscribeSnapshot = db.collection("attendance_users").doc(currentUserUid).onSnapshot(doc => {
                 if (doc.exists) {
-                    data = doc.data();
-                } else {
-                    data = { members: [], incidents: {} };
+                    const cloudData = doc.data();
+                    data = {
+                        members: cloudData.members || [],
+                        memberRoles: cloudData.memberRoles || {},
+                        incidents: cloudData.incidents || {},
+                        customEvents: cloudData.customEvents || [],
+                        fixedTasks: cloudData.fixedTasks || [],
+                        fixedReminders: cloudData.fixedReminders || []
+                    };
                 }
-                renderMembers();
-                if(document.getElementById('report-tab').classList.contains('active')) {
-                    initReportPage();
-                }
+                initSystemRender();
             });
         } else {
             currentUserUid = "";
@@ -261,237 +348,325 @@
         }
     });
 
-    // 儲存至屬於當前使用者的雲端資料夾
     function saveData() {
         if(!currentUserUid) return;
-        db.collection("attendance_users").doc(currentUserUid).set(data)
-        .catch(err => alert("儲存失敗：" + err.message));
+        db.collection("attendance_users").doc(currentUserUid).set(data).catch(err => alert("儲存失敗：" + err.message));
     }
 
     function handleLogin() {
         const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value;
-        const errDiv = document.getElementById('auth-error');
-        errDiv.innerText = "";
-        if(!email || !password) return errDiv.innerText = "請完整輸入帳號與密碼";
-
-        auth.signInWithEmailAndPassword(email, password)
-        .catch(error => { errDiv.innerText = "登入失敗：" + error.message; });
+        if(!email || !password) return alert("請輸入帳號密碼");
+        auth.signInWithEmailAndPassword(email, password).catch(err => alert("登入失敗: " + err.message));
     }
 
-    function handleLogout() {
-        if(confirm("確定要登出系統嗎？")) { auth.signOut(); }
+    function handleLogout() { if(confirm("確定登出？")) auth.signOut(); }
+
+    // 初始化與分頁控制
+    function initSystemRender() {
+        renderMembers();
+        renderSettingLists();
+        updatePresetSelects();
+        if(document.getElementById('tab-calendar').classList.contains('active') && currentSelectMember) { renderWeekCalendar(); }
+        if(document.getElementById('tab-report').classList.contains('active')) { refreshReportPage(); }
+        if(document.getElementById('tab-board').classList.contains('active')) { renderTodayBoard(); }
     }
 
-    // --- 以下為系統核心控制邏輯 ---
-    function initTimeSelectOptions() {
-        const startSelect = document.getElementById('modal-start-time');
-        const endSelect = document.getElementById('modal-end-time');
-        startSelect.innerHTML = ''; endSelect.innerHTML = '';
-        for (let h = 0; h < 24; h++) {
-            for (let m of ['00', '30']) {
-                const hh = String(h).padStart(2, '0'); const timeStr = `${hh}:${m}`;
-                const optStart = document.createElement('option'); optStart.value = timeStr; optStart.innerText = timeStr; startSelect.appendChild(optStart);
-                const optEnd = document.createElement('option'); optEnd.value = timeStr; optEnd.innerText = timeStr; endSelect.appendChild(optEnd);
-            }
-        }
-        startSelect.value = "09:00"; endSelect.value = "14:00";
-    }
-
-    function switchTab(event, tabId) {
+    function switchTab(tabId) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        if (event && event.currentTarget) event.currentTarget.classList.add('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
+        
+        // 分頁切換觸發器
+        if(tabId === 'tab-report') { refreshReportPage(); }
+        if(tabId === 'tab-board') { renderTodayBoard(); }
+        window.scrollTo(0,0);
     }
 
+    // --- 1. 人員管理 ---
     function renderMembers() {
         const listDiv = document.getElementById('member-list');
         listDiv.innerHTML = '';
-        if(!data.members || data.members.length === 0) {
-            listDiv.innerHTML = '<p style="color:#64748b;">目前暫無人員，請先新增。</p>'; return;
-        }
-        data.members.forEach(name => {
-            const card = document.createElement('div'); card.className = 'member-card'; card.innerText = name; card.onclick = () => openCalendar(name);
+        if(!data.members || data.members.length === 0) { listDiv.innerHTML = '<p style="color:#64748b; text-align:center;">暫無人員</p>'; return; }
+        
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            const role = data.memberRoles?.[name] || '';
+            
+            const card = document.createElement('div'); card.className = 'member-card';
+            card.onclick = () => { currentSelectMember = name; switchTab('tab-calendar'); openWeekView(name); };
+            
+            if(role) { card.innerHTML += `<span class="tag-badge">${role}</span>`; }
+            card.innerHTML += `<div class="name">${name}</div>`;
+            
             const delBtn = document.createElement('div'); delBtn.className = 'delete-btn'; delBtn.innerText = '×';
             delBtn.onclick = (e) => { e.stopPropagation(); deleteMember(name); };
+            
             card.appendChild(delBtn); listDiv.appendChild(card);
         });
     }
 
     function addMember() {
-        const input = document.getElementById('new-member-name'); const name = input.value.trim();
-        if(!name) return alert('請輸入姓名');
-        if(!data.members) data.members = [];
-        if(!data.incidents) data.incidents = {};
-        if(data.members.includes(name)) return alert('此人員已存在');
-        data.members.push(name); data.incidents[name] = data.incidents[name] || {};
-        saveData(); input.value = '';
+        const nameInput = document.getElementById('new-member-name');
+        const roleInput = document.getElementById('new-member-role');
+        const name = nameInput.value.trim(); const role = roleInput.value.trim();
+        if(!name) return alert("請輸入姓名");
+        
+        let existingNames = data.members.map(m => (typeof m === 'object' ? m.name : m));
+        if(existingNames.includes(name)) return alert("此人員已存在");
+        
+        data.members.push({name: name, role: role});
+        if(!data.memberRoles) data.memberRoles = {};
+        data.memberRoles[name] = role;
+        saveData(); nameInput.value = ''; roleInput.value = '';
     }
 
     function deleteMember(name) {
-        if(confirm(`確定要刪除人員「${name}」嗎？\n相關紀錄將一併刪除。`)) {
-            data.members = data.members.filter(m => m !== name);
-            if(data.incidents[name]) delete data.incidents[name];
+        if(confirm(`確定刪除 ${name}？`)) {
+            data.members = data.members.filter(m => (typeof m === 'object' ? m.name !== name : m !== name));
+            if(data.memberRoles?.[name]) delete data.memberRoles[name];
+            if(data.incidents?.[name]) delete data.incidents[name];
+            if(currentSelectMember === name) currentSelectMember = '';
             saveData();
         }
     }
 
-    let currentSelectMember = ''; let currentDate = new Date(); let currentActiveDateStr = '';
-
-    function openCalendar(name) {
-        currentSelectMember = name;
-        document.getElementById('member-home').style.display = 'none';
-        document.getElementById('member-calendar-view').style.display = 'block';
-        document.getElementById('current-member-title').innerText = `${name} 的事故月曆紀錄`;
-        renderCalendar();
+    // --- 2. 核心精簡週曆功能 ---
+    let currentActiveDateStr = '';
+    function openWeekView(name) {
+        document.getElementById('calendar-no-select').style.display = 'none';
+        document.getElementById('calendar-view').style.display = 'block';
+        document.getElementById('current-member-title').innerText = `${name} 的週月曆紀錄`;
+        currentCalDate = new Date(); // 重設為當週
+        renderWeekCalendar();
     }
 
-    function backToMemberHome() {
-        document.getElementById('member-home').style.display = 'block';
-        document.getElementById('member-calendar-view').style.display = 'none';
+    function toggleWeekend() { showWeekend = document.getElementById('show-weekend-chk').checked; renderWeekCalendar(); }
+    function changeWeek(dir) { currentCalDate.setDate(currentCalDate.getDate() + (dir * 7)); renderWeekCalendar(); }
+
+    function getMonday(d) {
+        d = new Date(d); const day = d.getDay();
+        const diff = d.getDate() - day + (day == 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
     }
 
-    function changeMonth(direction) { currentDate.setMonth(currentDate.getMonth() + direction); renderCalendar(); }
-
-    function renderCalendar() {
-        const year = currentDate.getFullYear(); const month = currentDate.getMonth();
-        document.getElementById('calendar-month-year').innerText = `${year} 年 ${month + 1} 月`;
-        const container = document.getElementById('calendar-container'); container.innerHTML = '';
-        const grid = document.createElement('div'); grid.className = 'calendar-grid';
-
-        ['日', '一', '二', '三', '四', '五', '六'].forEach(w => {
-            const label = document.createElement('div'); label.className = 'calendar-day-label'; label.innerText = w; grid.appendChild(label);
-        });
-
-        const firstDay = new Date(year, month, 1).getDay(); const totalDays = new Date(year, month + 1, 0).getDate();
-        for (let i = 0; i < firstDay; i++) {
-            const emptyCell = document.createElement('div'); emptyCell.className = 'calendar-cell'; emptyCell.style.background = '#f1f5f9'; grid.appendChild(emptyCell);
+    function renderWeekCalendar() {
+        const container = document.getElementById('week-container'); container.innerHTML = '';
+        const monday = getMonday(currentCalDate);
+        
+        const endDayCount = showWeekend ? 7 : 5;
+        const weekGrid = document.createElement('div');
+        weekGrid.className = `week-grid ${showWeekend ? 'show-weekend' : ''}`;
+        
+        const weeksLabel = ['一', '二', '三', '四', '五', '六', '日'];
+        for(let i=0; i<endDayCount; i++) {
+            const label = document.createElement('div'); label.className = 'week-day-label';
+            label.innerText = `週${weeksLabel[i]}`; weekGrid.appendChild(label);
         }
 
         const memberIncidents = data.incidents[currentSelectMember] || {};
-        for (let day = 1; day <= totalDays; day++) {
-            const cell = document.createElement('div'); cell.className = 'calendar-cell';
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            cell.innerHTML = `<div class="date-num">${day}</div>`;
-            const tagsContainer = document.createElement('div'); tagsContainer.className = 'event-tags-container';
 
-            const list = memberIncidents[dateStr] || [];
-            list.forEach((incident, index) => {
+        for(let i=0; i<endDayCount; i++) {
+            const cellDate = new Date(monday); cellDate.setDate(monday.getDate() + i);
+            const dateStr = cellDate.toISOString().split('T')[0];
+            
+            const cell = document.createElement('div'); cell.className = 'week-cell';
+            cell.innerHTML = `<div class="date-num">${cellDate.getMonth()+1}/${cellDate.getDate()}</div>`;
+            
+            const evtsDiv = document.createElement('div'); evtsDiv.className = 'week-events';
+            const dayEvts = memberIncidents[dateStr] || [];
+            
+            // 相容舊資料字串格式，自動升級為陣列結構
+            const standardizedEvts = Array.isArray(dayEvts) ? dayEvts : [{label: dayEvts, isAllDay: true}];
+
+            standardizedEvts.forEach((evt, idx) => {
+                if(!evt.label) return;
                 const tag = document.createElement('div'); tag.className = 'event-tag';
-                const timeText = incident.isAllDay ? '整天' : `${incident.startTime}~${incident.endTime}`;
-                tag.innerHTML = `<span>${incident.label}(${timeText})</span>`;
-                const delSpan = document.createElement('span'); delSpan.className = 'event-del'; delSpan.innerText = '×';
-                delSpan.onclick = (e) => {
+                const timeT = evt.isAllDay ? '整天' : `${evt.startTime}`;
+                tag.innerHTML = `<span>${evt.label}(${timeT})</span>`;
+                
+                const del = document.createElement('span'); del.className = 'event-del'; del.innerText = '×';
+                del.onclick = (e) => {
                     e.stopPropagation();
-                    if(confirm(`確定要刪除「${incident.label}」嗎？`)) {
-                        data.incidents[currentSelectMember][dateStr].splice(index, 1);
-                        if(data.incidents[currentSelectMember][dateStr].length === 0) delete data.incidents[currentSelectMember][dateStr];
-                        saveData(); renderCalendar();
+                    if(confirm(`刪除「${evt.label}」？`)) {
+                        data.incidents[currentSelectMember][dateStr].splice(idx, 1);
+                        saveData();
                     }
                 };
-                tag.appendChild(delSpan); tagsContainer.appendChild(tag);
+                tag.appendChild(del); evtsDiv.appendChild(tag);
             });
-            cell.appendChild(tagsContainer);
+
+            cell.appendChild(evtsDiv);
             cell.onclick = () => { currentActiveDateStr = dateStr; openIncidentModal(dateStr); };
-            grid.appendChild(cell);
+            weekGrid.appendChild(cell);
         }
-        container.appendChild(grid);
+        
+        container.appendChild(weekGrid);
+        
+        const sat = new Date(monday); sat.setDate(monday.getDate() + 4);
+        document.getElementById('week-date-range').innerText = `${monday.getMonth()+1}/${monday.getDate()} ~ ${sat.getMonth()+1}/${sat.getDate()}`;
     }
 
+    // 週曆彈窗控制
     function openIncidentModal(dateStr) {
-        document.getElementById('modal-title').innerText = `${currentSelectMember} - ${dateStr} 新增安排`;
+        document.getElementById('modal-title').innerText = `${currentSelectMember} (${dateStr})`;
         document.getElementById('modal-label').value = ''; document.getElementById('modal-type').value = 'allDay';
-        toggleModalTimeFields(); document.getElementById('incident-modal').style.display = 'flex';
+        document.getElementById('modal-preset-select').value = ''; toggleModalTimeFields();
+        document.getElementById('incident-modal').style.display = 'flex';
     }
     function closeIncidentModal() { document.getElementById('incident-modal').style.display = 'none'; }
     function toggleModalTimeFields() {
-        const type = document.getElementById('modal-type').value;
-        document.getElementById('modal-time-range-fields').style.display = (type === 'range') ? 'flex' : 'none';
+        document.getElementById('modal-time-range-fields').style.display = (document.getElementById('modal-type').value === 'range') ? 'flex' : 'none';
+    }
+
+    function applyPresetToModal() {
+        const val = document.getElementById('modal-preset-select').value; if(!val) return;
+        const [type, index] = val.split('-');
+        if(type === 'custom') {
+            const item = data.customEvents[index]; document.getElementById('modal-label').value = item.label;
+            document.getElementById('modal-type').value = 'range'; toggleModalTimeFields();
+            document.getElementById('modal-start-time').value = item.startTime; document.getElementById('modal-end-time').value = item.endTime;
+        } else if(type === 'fixed') {
+            document.getElementById('modal-label').value = data.fixedTasks[index];
+            document.getElementById('modal-type').value = 'allDay'; toggleModalTimeFields();
+        }
     }
 
     function submitIncidentModal() {
         const label = document.getElementById('modal-label').value.trim(); const type = document.getElementById('modal-type').value;
-        if (!label) return alert('請輸入工作/事故名稱');
-
-        let newIncident = {};
-        if (type === 'allDay') {
-            newIncident = { label: label, isAllDay: true, startTime: "", endTime: "" };
-        } else {
-            const start = document.getElementById('modal-start-time').value; const end = document.getElementById('modal-end-time').value;
-            if (timeToMinutes(start) >= timeToMinutes(end)) return alert('結束時間必須晚於開始時間！');
-            newIncident = { label: label, isAllDay: false, startTime: start, endTime: end };
+        if(!label) return alert("請輸入名稱");
+        let newEvt = { label: label, isAllDay: (type === 'allDay'), startTime: '', endTime: '' };
+        if(type === 'range') {
+            newEvt.startTime = document.getElementById('modal-start-time').value;
+            newEvt.endTime = document.getElementById('modal-end-time').value;
         }
-
         if(!data.incidents[currentSelectMember]) data.incidents[currentSelectMember] = {};
-        if (!data.incidents[currentSelectMember][currentActiveDateStr]) data.incidents[currentSelectMember][currentActiveDateStr] = [];
-        data.incidents[currentSelectMember][currentActiveDateStr].push(newIncident);
-        saveData(); closeIncidentModal(); renderCalendar();
-    }
-
-    let actualPresentMembers = new Set(); let freeMembersList = []; 
-    function timeToMinutes(timeStr) {
-        if (!timeStr) return 0; const parts = timeStr.split(':'); return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-    }
-    function isTimeOverlapping(s1, e1, s2, e2) { return Math.max(s1, s2) < Math.min(e1, e2); }
-
-    function initReportPage() {
-        const dateInput = document.getElementById('report-date');
-        if (!dateInput.value) { dateInput.value = new Date().toISOString().split('T')[0]; }
-        const targetDate = dateInput.value; const setTimeStr = document.getElementById('report-time').value; const setTimeMinutes = timeToMinutes(setTimeStr);
-        actualPresentMembers = new Set();
-        
-        if(data.members) {
-            data.members.forEach(name => {
-                const incidentsList = data.incidents?.[name]?.[targetDate] || [];
-                if (incidentsList.length === 0) { actualPresentMembers.add(name); } 
-                else {
-                    let canAttend = true;
-                    for (let incident of incidentsList) {
-                        if (incident.isAllDay) { canAttend = false; break; }
-                        else {
-                            if (setTimeMinutes >= timeToMinutes(incident.startTime) && setTimeMinutes < timeToMinutes(incident.endTime)) { canAttend = false; break; }
-                        }
-                    }
-                    if (canAttend) actualPresentMembers.add(name);
-                }
-            });
+        if(!Array.isArray(data.incidents[currentSelectMember][currentActiveDateStr])) {
+            // 相容並清除舊資料字串
+            data.incidents[currentSelectMember][currentActiveDateStr] = [];
         }
-        renderAttendanceCheckboxes(); generateReport(); checkFreeMembers(); 
+        data.incidents[currentSelectMember][currentActiveDateStr].push(newEvt);
+        saveData(); closeIncidentModal();
+    }
+
+    // --- 3. 設定中心頁面運作 ---
+    function addCustomEventType() {
+        const label = document.getElementById('custom-evt-label').value.trim();
+        const start = document.getElementById('custom-evt-start').value;
+        const end = document.getElementById('custom-evt-end').value;
+        if(!label) return alert("請輸入名稱");
+        data.customEvents.push({label, startTime: start, endTime: end}); saveData();
+        document.getElementById('custom-evt-label').value = '';
+    }
+    function addFixedTask() {
+        const name = document.getElementById('fixed-task-name').value.trim(); if(!name) return alert("請輸入名稱");
+        data.fixedTasks.push(name); saveData(); document.getElementById('fixed-task-name').value = '';
+    }
+    function addFixedReminder() {
+        const day = document.getElementById('remind-day').value;
+        const time = document.getElementById('remind-time').value;
+        const text = document.getElementById('remind-text').value.trim();
+        if(!text) return alert("請輸入提醒內容");
+        data.fixedReminders.push({day: parseInt(day), time, text}); saveData();
+        document.getElementById('remind-text').value = '';
+    }
+
+    function deleteSettingItem(field, index) { data[field].splice(index, 1); saveData(); }
+
+    function renderSettingLists() {
+        const cList = document.getElementById('custom-event-list'); cList.innerHTML = '';
+        data.customEvents.forEach((item, idx) => {
+            cList.innerHTML += `<li class="setting-item"><span>${item.label} (${item.startTime}~${item.endTime})</span><button onclick="deleteSettingItem('customEvents', ${idx})">刪除</button></li>`;
+        });
+        const tList = document.getElementById('fixed-task-list'); tList.innerHTML = '';
+        data.fixedTasks.forEach((item, idx) => {
+            tList.innerHTML += `<li class="setting-item"><span>${item}</span><button onclick="deleteSettingItem('fixedTasks', ${idx})">刪除</button></li>`;
+        });
+        const rList = document.getElementById('reminder-list'); rList.innerHTML = '';
+        const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
+        data.fixedReminders.forEach((item, idx) => {
+            rList.innerHTML += `<li class="setting-item"><span>週${weekLabels[item.day]} ${item.time} - ${item.text}</span><button onclick="deleteSettingItem('fixedReminders', ${idx})">刪除</button></li>`;
+        });
+    }
+
+    function updatePresetSelects() {
+        const mSelect = document.getElementById('modal-preset-select'); mSelect.innerHTML = '<option value="">-- 請選擇 --</option>';
+        const dSelect = document.getElementById('dispatch-preset-select'); dSelect.innerHTML = '<option value="">-- 手動輸入或選擇種類 --</option>';
+        
+        data.customEvents.forEach((item, idx) => {
+            const opt = `<option value="custom-${idx}">自訂: ${item.label}</option>`;
+            mSelect.innerHTML += opt; dSelect.innerHTML += opt;
+        });
+        data.fixedTasks.forEach((item, idx) => {
+            mSelect.innerHTML += `<option value="fixed-${idx}">固定: ${item}</option>`;
+        });
+    }
+
+    function syncDispatchInput() {
+        const val = document.getElementById('dispatch-preset-select').value; if(!val) return;
+        const [type, index] = val.split('-');
+        if(type === 'custom') {
+            const item = data.customEvents[index]; document.getElementById('dispatch-label').value = item.label;
+            document.getElementById('free-start').value = item.startTime; document.getElementById('free-end').value = item.endTime;
+            checkFreeMembers();
+        }
+    }
+
+    // --- 4. 報表彙整與智慧派工 ---
+    let actualPresentMembers = new Set();
+    function timeToMinutes(t) { if(!t) return 0; const p = t.split(':'); return parseInt(p[0])*60 + parseInt(p[1]); }
+
+    function refreshReportPage() {
+        const rDate = document.getElementById('report-date'); if(!rDate.value) rDate.value = new Date().toISOString().split('T')[0];
+        const targetDate = rDate.value; const setMin = timeToMinutes(document.getElementById('report-time').value);
+        actualPresentMembers = new Set();
+
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            const evts = data.incidents?.[name]?.[targetDate] || [];
+            const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
+            
+            let isAbsent = false;
+            for(let e of stdEvts) {
+                if(e.isAllDay) { isAbsent = true; break; }
+                if(setMin >= timeToMinutes(e.startTime) && setMin < timeToMinutes(e.endTime)) { isAbsent = true; break; }
+            }
+            if(!isAbsent) actualPresentMembers.add(name);
+        });
+        renderAttendanceCheckboxes(); generateReport(); checkFreeMembers();
     }
 
     function renderAttendanceCheckboxes() {
         const container = document.getElementById('report-attendance-list'); container.innerHTML = '';
-        if(!data.members || data.members.length === 0) { container.innerHTML = '<p style="color:#64748b;">暫無人員資料</p>'; return; }
-        data.members.forEach(name => {
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m; const role = data.memberRoles?.[name] || '';
             const div = document.createElement('div'); div.className = 'checkbox-item';
-            const chk = document.createElement('input'); chk.type = 'checkbox'; chk.id = `chk-${name}`; chk.checked = actualPresentMembers.has(name);
-            chk.onchange = (e) => {
+            div.innerHTML = `<input type="checkbox" id="rep-chk-${name}" ${actualPresentMembers.has(name)?'checked':''}>
+                             <label for="rep-chk-${name}">${name}</label>${role ? `<span class="role">${role}</span>`:''}`;
+            div.querySelector('input').onchange = (e) => {
                 if(e.target.checked) actualPresentMembers.add(name); else actualPresentMembers.delete(name); generateReport();
             };
-            const label = document.createElement('label'); label.htmlFor = `chk-${name}`; label.innerText = name;
-            div.appendChild(chk); div.appendChild(label); container.appendChild(div);
+            container.appendChild(div);
         });
     }
 
     function generateReport() {
         const targetDate = document.getElementById('report-date').value; const setTime = document.getElementById('report-time').value;
-        const setTimeMinutes = timeToMinutes(setTime); const emergencyText = document.getElementById('emergency-input').value.trim();
-        if (!targetDate) return;
+        const setMin = timeToMinutes(setTime); const emergencyText = document.getElementById('emergency-input').value.trim();
+        let incidentMap = {};
 
-        let incidentMap = {}; 
-        if(data.members) {
-            data.members.forEach(name => {
-                const incidentsList = data.incidents?.[name]?.[targetDate] || [];
-                incidentsList.forEach(incident => {
-                    if (incident.isAllDay || (setTimeMinutes >= timeToMinutes(incident.startTime) && setTimeMinutes < timeToMinutes(incident.endTime))) {
-                        const keyStr = incident.label;
-                        if (!incidentMap[keyStr]) incidentMap[keyStr] = [];
-                        if (!incidentMap[keyStr].includes(name)) incidentMap[keyStr].push(name);
-                    }
-                });
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            const evts = data.incidents?.[name]?.[targetDate] || [];
+            const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
+            stdEvts.forEach(e => {
+                if(e.isAllDay || (setMin >= timeToMinutes(e.startTime) && setMin < timeToMinutes(e.endTime))) {
+                    if(!incidentMap[e.label]) incidentMap[e.label] = [];
+                    if(!incidentMap[e.label].includes(name)) incidentMap[e.label].push(name);
+                }
             });
-        }
+        });
 
         if (emergencyText) {
             emergencyText.split(/[,，\s]+/).forEach(item => {
@@ -505,66 +680,99 @@
             });
         }
 
-        let outputText = `【${targetDate} 集合回報】\n集合時間：${setTime}\n---------------------------\n`;
-        for (let task in incidentMap) { outputText += `${task}：${incidentMap[task].join('、')}\n`; }
-        const totalExpected = data.members ? data.members.length : 0; const actualArr = Array.from(actualPresentMembers); const totalActual = actualArr.length;
-        outputText += `---------------------------\n應到：${totalExpected} 人\n實到：${totalActual} 人\n實到人員：${totalActual > 0 ? actualArr.join('、') : '無'}`;
-        document.getElementById('report-output').innerText = outputText;
+        let txt = `【${targetDate} 集合回報】\n集合時間：${setTime}\n---------------------------\n`;
+        for(let t in incidentMap) { txt += `${t}：${incidentMap[t].join('、')}\n`; }
+        const totalExp = data.members.length; const actualArr = Array.from(actualPresentMembers);
+        txt += `---------------------------\n應到：${totalExp} 人\n實到：${actualArr.length} 人\n實到人員：${actualArr.length>0?actualArr.join('、'):'無'}`;
+        document.getElementById('report-output').innerText = txt;
     }
 
     function copyReportText() {
-        navigator.clipboard.writeText(document.getElementById('report-output').innerText).then(() => alert('文字已成功複製！'))
-        .catch(err => alert('複製失敗'));
+        navigator.clipboard.writeText(document.getElementById('report-output').innerText).then(() => alert("複製成功！"));
     }
 
     function checkFreeMembers() {
         const targetDate = document.getElementById('report-date').value;
-        const startStr = document.getElementById('free-start').value; const endStr = document.getElementById('free-end').value;
-        const queryStart = timeToMinutes(startStr); const queryEnd = timeToMinutes(endStr);
+        const qStart = timeToMinutes(document.getElementById('free-start').value);
+        const qEnd = timeToMinutes(document.getElementById('free-end').value);
         const listDiv = document.getElementById('free-members-list'); listDiv.innerHTML = '';
-        if (queryStart >= queryEnd) { listDiv.innerHTML = '<span style="color:var(--danger);">時間不正確</span>'; return; }
+        if(qStart >= qEnd) { listDiv.innerHTML = '<span style="color:var(--danger)">時間有誤</span>'; return; }
 
-        freeMembersList = [];
-        if(data.members) {
-            data.members.forEach(name => {
-                const list = data.incidents?.[name]?.[targetDate] || []; let isFree = true;
-                for (let incident of list) {
-                    if (incident.isAllDay) { isFree = false; break; }
-                    else { if (isTimeOverlapping(queryStart, queryEnd, timeToMinutes(incident.startTime), timeToMinutes(incident.endTime))) { isFree = false; break; } }
-                }
-                if (isFree) freeMembersList.push(name);
-            });
-        }
-
-        if (freeMembersList.length === 0) { listDiv.innerHTML = '<span>沒有空閒人員</span>'; } 
-        else {
-            freeMembersList.forEach(name => {
-                const labelObj = document.createElement('label'); labelObj.className = 'free-item';
-                const chk = document.createElement('input'); chk.type = 'checkbox'; chk.name = 'free-member-choice'; chk.value = name; chk.checked = true; 
-                labelObj.appendChild(chk); labelObj.appendChild(document.createTextNode(` ${name}`)); listDiv.appendChild(labelObj);
-            });
-        }
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m; const role = data.memberRoles?.[name] || '';
+            const evts = data.incidents?.[name]?.[targetDate] || [];
+            const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
+            
+            let isFree = true;
+            for(let e of stdEvts) {
+                if(e.isAllDay) { isFree = false; break; }
+                if(Math.max(qStart, timeToMinutes(e.startTime)) < Math.min(qEnd, timeToMinutes(e.endTime))) { isFree = false; break; }
+            }
+            if(isFree) {
+                const div = document.createElement('div'); div.className = 'checkbox-item';
+                div.innerHTML = `<input type="checkbox" name="free-chk" value="${name}">
+                                 <label>${name}</label>${role?`<span class="role">${role}</span>`:''}`;
+                listDiv.appendChild(div);
+            }
+        });
+        if(listDiv.innerHTML === '') listDiv.innerHTML = '<span>此區段無空閒人員</span>';
     }
 
     function executeDispatch() {
         const targetDate = document.getElementById('report-date').value;
-        const startStr = document.getElementById('free-start').value; const endStr = document.getElementById('free-end').value;
-        const labelInput = document.getElementById('dispatch-label'); const taskLabel = labelInput.value.trim();
-        if (!taskLabel) return alert('請輸入工作名稱');
-        const checkedBoxes = document.querySelectorAll('input[name="free-member-choice"]:checked');
-        if (checkedBoxes.length === 0) return alert('請勾選人員');
+        const start = document.getElementById('free-start').value; const end = document.getElementById('free-end').value;
+        const label = document.getElementById('dispatch-label').value.trim();
+        if(!label) return alert("請輸入指派名稱");
+        
+        const chks = document.querySelectorAll('input[name="free-chk"]:checked');
+        if(chks.length === 0) return alert("請至少勾選一員 (預設為不勾選)");
 
-        let selectedMembers = []; checkedBoxes.forEach(box => selectedMembers.push(box.value));
-        if (!confirm(`確定指派工作嗎？`)) return;
-
-        selectedMembers.forEach(name => {
-            data.incidents[name] = data.incidents[name] || {}; data.incidents[name][targetDate] = data.incidents[name][targetDate] || [];
-            data.incidents[name][targetDate].push({ label: taskLabel, isAllDay: false, startTime: startStr, endTime: endStr });
+        chks.forEach(box => {
+            const name = box.value; if(!data.incidents[name]) data.incidents[name] = {};
+            if(!data.incidents[name][targetDate]) data.incidents[name][targetDate] = [];
+            data.incidents[name][targetDate].push({label, isAllDay:false, startTime: start, endTime: end});
         });
-        saveData(); labelInput.value = ''; alert('派工成功！');
+        saveData(); document.getElementById('dispatch-label').value = ''; alert("指派成功！");
     }
 
-    initTimeSelectOptions();
+    // --- 5. 今日看板頁面功能 ---
+    function renderTodayBoard() {
+        const bDate = document.getElementById('board-date'); if(!bDate.value) bDate.value = new Date().toISOString().split('T')[0];
+        const targetDate = bDate.value; const dateObj = new Date(targetDate); const dayOfWeek = dateObj.getDay();
+        
+        // 提醒事項
+        const remDiv = document.getElementById('board-reminders'); remDiv.innerHTML = '';
+        const todayReminders = data.fixedReminders.filter(r => r.day === dayOfWeek);
+        if(todayReminders.length > 0) {
+            remDiv.innerHTML = '<strong style="color:var(--warning); font-size:14px;">⚠️ 今日固定提醒事項：</strong>';
+            todayReminders.forEach(r => {
+                remDiv.innerHTML += `<div style="background:#fffbeb; border:1px solid #fde68a; padding:8px; margin-top:4px; border-radius:6px; font-size:13px; color:#b45309;">⏰ 於 ${r.time} 前：${r.text}</div>`;
+            });
+        }
+
+        // 看板列表
+        const container = document.getElementById('board-events-container'); container.innerHTML = '';
+        let hasEvent = false;
+
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m; const role = data.memberRoles?.[name] || '';
+            const evts = data.incidents?.[name]?.[targetDate] || [];
+            const stdEvts = Array.isArray(evts) ? evts : [{label: evts, isAllDay: true}];
+            
+            if(stdEvts.length > 0 && stdEvts[0].label) {
+                hasEvent = true;
+                const card = document.createElement('div'); card.className = 'board-card';
+                let evtsHtml = '';
+                stdEvts.forEach(e => {
+                    const timeT = e.isAllDay ? '整天' : `${e.startTime} ~ ${e.endTime}`;
+                    evtsHtml += `<span style="display:inline-block; background:#ffe2e2; color:#ef4444; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:5px; margin-top:4px;">${e.label} (${timeT})</span>`;
+                });
+                card.innerHTML = `<div style="font-weight:bold; font-size:14px;">${name} ${role ? `<span style="font-size:11px; color:#64748b;">[${role}]</span>`:''}</div><div style="margin-top:2px;">${evtsHtml}</div>`;
+                container.appendChild(card);
+            }
+        });
+        if(!hasEvent) container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px 0;">今日所有人皆無事故行程，全體空閒！</p>';
+    }
 </script>
 </body>
 </html>
