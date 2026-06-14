@@ -450,8 +450,24 @@
                 }
             };
             
+            card.innerHTML = `<div class="name">${name}</div>`;
+
+            // 建立職位標籤
+            const badge = document.createElement('span'); 
+            badge.className = 'tag-badge';
+            badge.innerText = role ? role : '+ 職位';
+            badge.onclick = (e) => {
+                e.stopPropagation(); // 1. 確實阻止事件冒泡，不跳轉週曆
+                e.preventDefault();
+                const newRole = prompt(`請輸入 ${name} 的新職位標籤：`, role);
+                if(newRole !== null) {
+                    if(!data.memberRoles) data.memberRoles = {};
+                    data.memberRoles[name] = newRole.trim();
+                    saveData();
+                }
+            };
+            
             card.appendChild(badge);
-            card.innerHTML += `<div class="name">${name}</div>`;
             
             const delBtn = document.createElement('div'); delBtn.className = 'delete-btn'; delBtn.innerText = '×';
             delBtn.onclick = (e) => { e.stopPropagation(); deleteMember(name); };
