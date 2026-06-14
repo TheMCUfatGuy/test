@@ -427,52 +427,27 @@
 
     // --- 1. 人員管理 ---
     function renderMembers() {
-        const listDiv = document.getElementById('member-list'); listDiv.innerHTML = '';
-        if(!data.members || data.members.length === 0) { listDiv.innerHTML = '<p style="color:#64748b; text-align:center;">暫無人員</p>'; return; }
+    const listDiv = document.getElementById('member-list'); listDiv.innerHTML = '';
+    if(!data.members || data.members.length === 0) { listDiv.innerHTML = '<p style="color:#64748b; text-align:center;">暫無人員</p>'; return; }
+    
+    data.members.forEach(m => {
+        const name = (typeof m === 'object') ? m.name : m;
+        const role = data.memberRoles?.[name] || '';
         
-        data.members.forEach(m => {
-            const name = (typeof m === 'object') ? m.name : m;
-            const role = data.memberRoles?.[name] || '';
-            
-            const card = document.createElement('div'); card.className = 'member-card';
-            card.onclick = () => { currentSelectMember = name; switchTab('tab-calendar'); openWeekView(name); };
-            
-            // 點擊職位標籤可直接修改
-            const badge = document.createElement('span'); badge.className = 'tag-badge';
-            badge.innerText = role ? role : '+ 職位';
-            badge.onclick = (e) => {
-                e.stopPropagation(); // 阻止觸發開啟週曆
-                const newRole = prompt(`請輸入 ${name} 的新職位標籤：`, role);
-                if(newRole !== null) {
-                    if(!data.memberRoles) data.memberRoles = {};
-                    data.memberRoles[name] = newRole.trim();
-                    saveData();
-                }
-            };
-            
-            card.innerHTML = `<div class="name">${name}</div>`;
-
-            // 建立職位標籤
-            const badge = document.createElement('span'); 
-            badge.className = 'tag-badge';
-            badge.innerText = role ? role : '+ 職位';
-            badge.onclick = (e) => {
-                e.stopPropagation(); // 1. 確實阻止事件冒泡，不跳轉週曆
-                e.preventDefault();
-                const newRole = prompt(`請輸入 ${name} 的新職位標籤：`, role);
-                if(newRole !== null) {
-                    if(!data.memberRoles) data.memberRoles = {};
-                    data.memberRoles[name] = newRole.trim();
-                    saveData();
-                }
-            };
-            
-            card.appendChild(badge);
-            
-            const delBtn = document.createElement('div'); delBtn.className = 'delete-btn'; delBtn.innerText = '×';
-            delBtn.onclick = (e) => { e.stopPropagation(); deleteMember(name); };
-            
-            card.appendChild(delBtn); listDiv.appendChild(card);
+        const card = document.createElement('div'); card.className = 'member-card';
+        card.onclick = () => { currentSelectMember = name; switchTab('tab-calendar'); openWeekView(name); };
+        
+        // 僅純文字顯示職位標籤，不綁定任何點擊事件，避免誤觸
+        const badge = document.createElement('span'); badge.className = 'tag-badge';
+        badge.innerText = role ? role : '+ 職位';
+        
+        card.appendChild(badge);
+        card.innerHTML += `<div class="name">${name}</div>`;
+        
+        const delBtn = document.createElement('div'); delBtn.className = 'delete-btn'; delBtn.innerText = '×';
+        delBtn.onclick = (e) => { e.stopPropagation(); deleteMember(name); };
+        
+        card.appendChild(delBtn); listDiv.appendChild(card);
         });
     }
 
@@ -503,12 +478,33 @@
 
     // --- 2. 週曆功能 ---
     function openWeekView(name) {
-        document.getElementById('calendar-no-select').style.display = 'none';
-        document.getElementById('calendar-view').style.display = 'block';
-        document.getElementById('current-member-title').innerText = `${name} 的週月曆紀錄`;
-        currentCalDate = new Date(); 
-        renderWeekCalendar();
-    }
+    document.getElementById('calendar-no-select').style.display = 'none';
+    document.getElementById('calendar-view').style.display = 'block';
+    
+    // 取得當前職位
+    const role = data.memberRoles?.[name] || '';
+    const roleDisplay = role ? ` [${role}]` : ' [+未設定職位]';
+    
+    // 渲染標題並綁定點擊事件
+    const titleEl = document.getElementById('current-member-title');
+    titleEl.innerHTML = `<span style="cursor:pointer; color:var(--primary); text-decoration:underline;">${name}${roleDisplay} ⚙️</span>`;
+    
+    // 點擊週月曆上方的名字標題，即可修改職位
+    titleEl.onclick = () => {
+        const currentRole = data.memberRoles?.[name] || '';
+        const newRole = prompt(`請輸入 ${name} 的新職位標籤：`, currentRole);
+        if(newRole !== null) {
+            if(!data.memberRoles) data.memberRoles = {};
+            data.memberRoles[name] = newRole.trim();
+            saveData();
+            // 修改後立即刷新當前週月曆標題
+            openWeekView(name);
+        }
+    };
+
+    currentCalDate = new Date(); 
+    renderWeekCalendar();
+}
     function toggleWeekend() { showWeekend = document.getElementById('show-weekend-chk').checked; renderWeekCalendar(); }
     function changeWeek(dir) { currentCalDate.setDate(currentCalDate.getDate() + (dir * 7)); renderWeekCalendar(); }
     function getMonday(d) { d = new Date(d); const day = d.getDay(); const diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
