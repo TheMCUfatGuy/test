@@ -43,7 +43,7 @@
         /* 登入樣式 */
         .auth-container { max-width: 400px; margin: 60px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* 修正：確保電腦版與手機版登出按鈕皆能正常顯示 */
+        /* 確保電腦版與手機版登出按鈕皆能正常顯示 */
         .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         .logout-btn { background: #64748b; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
 
@@ -109,7 +109,7 @@
             .week-cell { min-height: 110px; padding: 2px; }
             .week-day-label { font-size: 11px; padding: 4px 1px; }
             .event-tag { font-size: 9px; padding: 1px; }
-            .logout-btn { width: auto; text-align: center; } /* 修正手機按鈕不要全寬塞爆 */
+            .logout-btn { width: auto; text-align: center; } 
             button { padding: 12px; width: 100%; }
             .form-row { flex-direction: column; gap: 5px; }
             .form-row button { width: 100%; }
@@ -274,20 +274,26 @@
             <div id="report-attendance-list" class="member-checkbox-list"></div>
         </div>
         
-        <div class="form-group" style="background: #fff3cd; padding: 12px; border-radius: 8px; border: 1px solid #ffeeba;">
-            <label style="color:#b45309; margin-bottom:6px;">4. 突發臨時事故（手動追加）：</label>
-            <div class="emergency-grid" style="display:flex; gap:6px; margin-bottom:8px;">
-                <input type="text" id="emergency-label" placeholder="事故名稱 (例: 臨時公假)" style="flex:1.2;">
-                <input type="number" id="emergency-count" placeholder="人數 (例: 1)" style="flex:0.6;">
-                <input type="text" id="emergency-names" placeholder="人員名字 (例: 小明、小華)" style="flex:2;">
+        <div class="form-group" style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba;">
+            <label style="color:#b45309; margin-bottom:6px; font-size: 14px;">⚡ 4. 突發臨時事故（選人自動加總移出實到）：</label>
+            <div class="form-row" style="margin-bottom:8px;">
+                <input type="text" id="emergency-label" placeholder="輸入臨時事故名稱 (例: 臨時公假)" style="flex: 1.5;">
+                <select id="emergency-member-select" onchange="selectEmergencyMember()" style="flex: 1.5;">
+                    <option value="">-- 點選人員加入事故 --</option>
+                </select>
+            </div>
+            <div style="font-size:13px; margin: 8px 0; background:rgba(255,255,255,0.6); padding:8px; border-radius:4px;">
+                <strong>當前事故人數統計：</strong> <span id="emergency-status-count" style="color:var(--danger); font-weight:bold;">0</span> 人<br>
+                <strong>已選突發人員名單：</strong> <span id="emergency-status-names" style="color:#475569; font-style:italic;">暫無</span>
             </div>
             <div class="form-row" style="margin-bottom:0;">
-                <button onclick="addEmergencyItem()" style="background:#d97706; flex:1;">➕ 加入彙整文字檔</button>
+                <button onclick="addEmergencyItem()" style="background:#d97706; flex:1;">➕ 確定併入彙整文字檔</button>
                 <button onclick="popEmergencyItem()" style="background:#64748b; flex:1;">↩️ 撤回上一次加入</button>
+                <button onclick="clearEmergencyItem()" style="background:#be123c; flex:0.6;">🧹 清空</button>
             </div>
         </div>
         
-        <button onclick="copyReportText()" style="width:100%; margin-bottom:15px;">複製彙整文字檔案</button>
+        <button onclick="copyReportText()" style="width:100%; margin-bottom:15px; background: var(--primary);">複製彙整文字檔案</button>
         <div class="summary-box" id="report-output"></div>
 
         <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; margin-top:20px;">
@@ -408,13 +414,13 @@
     let currentCalDate = new Date(); 
     let showWeekend = false;
     let currentSelectMember = '';
-    let currentBoardView = 'text'; // 第 4 點修改：預設優先文字檔呈現
+    let currentBoardView = 'text'; 
     let currentActiveDateStr = '';
     
-    // 存儲臨時手動追加的突發事故陣列
-    let emergencyList = []; 
+    // 暫存當前臨時追加選定的人員名單與最後送出結果
+    let currentEmergencySelectedMembers = [];
+    let finalEmergencySubmittedList = []; 
 
-    // 監聽登入狀態
     auth.onAuthStateChanged(user => {
         if (unsubscribeSnapshot) unsubscribeSnapshot();
         if (user) {
@@ -476,7 +482,7 @@
     function initSystemRender() {
         renderMembers();
         renderSettingLists();
-        updatePresetSelects(); // 修正：確保雲端資料更新時，所有的選單也會立刻刷新重新同步
+        updatePresetSelects(); // 確保重新整理時即時注入自訂事故種類
         
         const todayStr = new Date().toISOString().split('T')[0];
         if(!document.getElementById('board-date').value) document.getElementById('board-date').value = todayStr;
@@ -663,7 +669,7 @@
     }
 
 
-    // --- 快速摘要 (第 4 點修改：優先文字檔呈現) ---
+    // --- 快速摘要 ---
     function toggleBoardView() {
         const visualDiv = document.getElementById('board-view-visual'); const textDiv = document.getElementById('board-view-text');
         const btn = document.getElementById('toggle-board-view-btn');
@@ -689,7 +695,6 @@
             });
         } else { todoDiv.innerHTML = '<span style="color:#64748b; font-size:13px;">今日無特定提醒事項。</span>'; }
 
-        // 渲染視覺圖卡
         const container = document.getElementById('board-events-container'); container.innerHTML = '';
         let hasEvent = false;
 
@@ -712,7 +717,6 @@
         });
         if(!hasEvent) container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px 0;">今日無任何勤務動態</p>';
 
-        // 確保預設呈現對應正確
         if(currentBoardView === 'text') {
             document.getElementById('board-view-visual').style.display = 'none';
             document.getElementById('board-view-text').style.display = 'block';
@@ -796,16 +800,19 @@
         data.fixedReminders.forEach((item, idx) => { rList.innerHTML += `<li class="setting-item"><span>週${weekLabels[item.day]} ${item.time} - ${item.text}</span><button onclick="deleteSettingItem('fixedReminders', ${idx})">刪除</button></li>`; });
     }
 
+    // 第二點修正：徹底重寫選單注入邏輯，每次重新整理或設定異動都保證塞入最新值
     function updatePresetSelects() {
-        const mSelect = document.getElementById('modal-preset-select'); mSelect.innerHTML = '<option value="">-- 請選擇 --</option>';
-        const dSelect = document.getElementById('dispatch-preset-select'); dSelect.innerHTML = '<option value="">-- 手動輸入或選擇種類 --</option>';
+        const mSelect = document.getElementById('modal-preset-select'); if(mSelect) mSelect.innerHTML = '<option value="">-- 請選擇 --</option>';
+        const dSelect = document.getElementById('dispatch-preset-select'); if(dSelect) dSelect.innerHTML = '<option value="">-- 手動輸入或選擇種類 --</option>';
         
-        // 確保自訂快速事故種類確實更新上架到下拉選單
         data.customEvents.forEach((item, idx) => { 
             const opt = `<option value="custom-${idx}">自訂: ${item.label}</option>`; 
-            mSelect.innerHTML += opt; dSelect.innerHTML += opt; 
+            if(mSelect) mSelect.innerHTML += opt; 
+            if(dSelect) dSelect.innerHTML += opt; 
         });
-        data.fixedTasks.forEach((item, idx) => { mSelect.innerHTML += `<option value="fixed-${idx}">固定: ${item.label}</option>`; });
+        data.fixedTasks.forEach((item, idx) => { 
+            if(mSelect) mSelect.innerHTML += `<option value="fixed-${idx}">固定: ${item.label}</option>`; 
+        });
     }
     
     function syncDispatchInput() {
@@ -909,7 +916,7 @@
         if(todayRules.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">今日無固定排班勤務項目</td></tr>'; return; }
 
         let mOptions = '<option value="">-- 尚未指派 --</option>';
-        data.members.forEach(m => { const name = typeof m === 'object' ? m.name : m; mOptions += `<option value="${name}">${name}</option>`; });
+        data.members.forEach(m => { const name = typeof m === 'object' ? m.name : m; mOptions += `<option value="${name}">${name}</option>'; });
 
         todayRules.forEach(rule => {
             let currentWorker = '';
@@ -1002,15 +1009,15 @@
     function copyStatReportText() { navigator.clipboard.writeText(document.getElementById('stat-report-output').innerText).then(() => alert("複製成功！")); }
 
 
-    // --- 人數中心 (第 3 點 & 第 5 點核心修正) ---
+    // --- 人數中心 (第一點核心更新) ---
     let actualPresentMembers = new Set();
     
     function refreshReportPage() {
         const targetDate = document.getElementById('report-date').value;
         const setMin = timeToMinutes(document.getElementById('report-time').value);
         
-        // 修正第 3 點：時間、日期切換時，必須徹底清空舊的 Set 快取，避免統計錯亂殘留
         actualPresentMembers.clear(); 
+        currentEmergencySelectedMembers = []; // 切換日期與時間時同步將臨時事故重算
 
         data.members.forEach(m => {
             const name = (typeof m === 'object') ? m.name : m; const evts = data.incidents?.[name]?.[targetDate] || [];
@@ -1021,7 +1028,12 @@
             }
             if(!isAbsent) actualPresentMembers.add(name);
         });
-        renderAttendanceCheckboxes(); generateReport(); checkFreeMembers();
+        
+        renderAttendanceCheckboxes(); 
+        updateEmergencyMemberSelect(); // 更新突發事故專屬下拉選單
+        updateEmergencyStatusUI();
+        generateReport(); 
+        checkFreeMembers();
     }
 
     function renderAttendanceCheckboxes() {
@@ -1039,40 +1051,99 @@
         });
     }
 
-    // 第 5 點修改：突發事故元件操作與撤回管理
-    function addEmergencyItem() {
-        const label = document.getElementById('emergency-label').value.trim();
-        const count = document.getElementById('emergency-count').value.trim();
-        const names = document.getElementById('emergency-names').value.trim();
+    // 第一點修改：更新突發臨時事故的選人名單
+    function updateEmergencyMemberSelect() {
+        const select = document.getElementById('emergency-member-select');
+        select.innerHTML = '<option value="">-- 點選人員加入事故 --</option>';
+        data.members.forEach(m => {
+            const name = (typeof m === 'object') ? m.name : m;
+            // 只有目前在「實際到場（且尚未被加進臨時事故）」的人，才可以被選
+            if(!currentEmergencySelectedMembers.includes(name)) {
+                select.innerHTML += `<option value="${name}">${name}</option>`;
+            }
+        });
+    }
+
+    function selectEmergencyMember() {
+        const select = document.getElementById('emergency-member-select');
+        const name = select.value;
+        if(!name) return;
+
+        // 1. 加入臨時暫存陣列
+        currentEmergencySelectedMembers.push(name);
+        // 2. 從實到名單中移除
+        actualPresentMembers.delete(name);
         
-        if(!label || !count || !names) return alert("請完整填寫『事故名稱』、『人數』與『人員名字』再點擊加入！");
-        
-        // 將合法的欄位資料存入獨立陣列
-        emergencyList.push({ label: label, count: parseInt(count), names: names });
-        
-        // 分割人名，將手動追加突發的人從「實際到場」扣除
-        names.split(/[,，、\s]+/).forEach(n => { if(n.trim()) actualPresentMembers.delete(n.trim()); });
-        
-        // 重新渲染勾選框與文字檔
+        // 更新 UI 與重繪
+        updateEmergencyMemberSelect();
+        updateEmergencyStatusUI();
         renderAttendanceCheckboxes();
         generateReport();
-        
-        // 清空欄位方便下一次輸入
+    }
+
+    function updateEmergencyStatusUI() {
+        document.getElementById('emergency-status-count').innerText = currentEmergencySelectedMembers.length;
+        document.getElementById('emergency-status-names').innerText = currentEmergencySelectedMembers.length > 0 ? currentEmergencySelectedMembers.join('、') : '暫無';
+    }
+
+    function addEmergencyItem() {
+        const label = document.getElementById('emergency-label').value.trim();
+        if(!label) return alert("請先輸入臨時事故名稱（如：臨時公假）");
+        if(currentEmergencySelectedMembers.length === 0) return alert("請至少從下拉選單中點選一名人員！");
+
+        // 將確定的事故放進最終產出文字陣列
+        finalEmergencySubmittedList.push({
+            label: label,
+            count: currentEmergencySelectedMembers.length,
+            names: [...currentEmergencySelectedMembers]
+        });
+
+        // 清空當前選取暫存，準備下一次輸入
+        currentEmergencySelectedMembers = [];
         document.getElementById('emergency-label').value = '';
-        document.getElementById('emergency-count').value = '';
-        document.getElementById('emergency-names').value = '';
+        
+        updateEmergencyMemberSelect();
+        updateEmergencyStatusUI();
+        generateReport();
+        alert("已成功併入底下文字檔格式中！");
     }
 
     function popEmergencyItem() {
-        if(emergencyList.length === 0) return alert("目前沒有可撤回的臨時突發事故。");
-        const popped = emergencyList.pop();
+        if(finalEmergencySubmittedList.length === 0) {
+            // 如果最終名單沒有，看當前有沒有正在選的人，有的話就退回最後一個
+            if(currentEmergencySelectedMembers.length > 0) {
+                const popped = currentEmergencySelectedMembers.pop();
+                actualPresentMembers.add(popped);
+                updateEmergencyMemberSelect();
+                updateEmergencyStatusUI();
+                renderAttendanceCheckboxes();
+                generateReport();
+                return;
+            }
+            return alert("目前沒有可撤回的臨時突發事故。");
+        }
         
-        // 撤回復原：將剛才剔除的人加回實際到場中
-        popped.names.split(/[,，、\s]+/).forEach(n => { if(n.trim()) actualPresentMembers.add(n.trim()); });
-        
+        // 撤回最後一個送出的區塊
+        const poppedItem = finalEmergencySubmittedList.pop();
+        // 將這些人重新放回實到 Set
+        poppedItem.names.forEach(name => actualPresentMembers.add(name));
+
+        updateEmergencyMemberSelect();
+        updateEmergencyStatusUI();
         renderAttendanceCheckboxes();
         generateReport();
-        alert(`已成功撤回：${popped.label}`);
+        alert(`已成功撤回：${poppedItem.label}`);
+    }
+
+    function clearEmergencyItem() {
+        if(confirm("確定清空當前選取的所有突發人員嗎？")) {
+            currentEmergencySelectedMembers.forEach(name => actualPresentMembers.add(name));
+            currentEmergencySelectedMembers = [];
+            updateEmergencyMemberSelect();
+            updateEmergencyStatusUI();
+            renderAttendanceCheckboxes();
+            generateReport();
+        }
     }
 
     function generateReport() {
@@ -1085,7 +1156,7 @@
 
         let incidentMap = {}; let totalAbsentCount = 0;
 
-        // 統計常規事故
+        // 1. 統計常規事故
         data.members.forEach(m => {
             const name = (typeof m === 'object') ? m.name : m; const evts = data.incidents?.[name]?.[targetDate] || [];
             evts.forEach(e => {
@@ -1097,14 +1168,22 @@
             });
         });
 
-        // 疊加剛才點按鈕推入的突發臨時事故
-        emergencyList.forEach(item => {
+        // 2. 疊加未點選「確定併入」但正選在快取中的人員
+        if(currentEmergencySelectedMembers.length > 0) {
+            const tempLabel = document.getElementById('emergency-label').value.trim() || "突發臨時事故";
+            totalAbsentCount += currentEmergencySelectedMembers.length;
+            if(!incidentMap[tempLabel]) incidentMap[tempLabel] = [];
+            currentEmergencySelectedMembers.forEach(n => {
+                if(!incidentMap[tempLabel].includes(n)) incidentMap[tempLabel].push(n);
+            });
+        }
+
+        // 3. 疊加已經確定「送出」的突發臨時事故
+        finalEmergencySubmittedList.forEach(item => {
             totalAbsentCount += item.count;
             if(!incidentMap[item.label]) incidentMap[item.label] = [];
-            item.names.split(/[,，、\s]+/).forEach(n => {
-                if(n.trim() && !incidentMap[item.label].includes(n.trim())) {
-                    incidentMap[item.label].push(n.trim());
-                }
+            item.names.forEach(n => {
+                if(!incidentMap[item.label].includes(n)) incidentMap[item.label].push(n);
             });
         });
 
