@@ -391,6 +391,7 @@
   measurementId: "G-LPHSTVB8K2"
 
 };
+    
     // 初始化防錯
     if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "請用您的金鑰替換此處") {
         try {
@@ -949,7 +950,7 @@
         if(todayRules.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">今日無固定排班勤務項目</td></tr>'; return; }
 
         let mOptions = '<option value="">-- 尚未指派 --</option>';
-        data.members.forEach(m => { const name = typeof m === 'object' ? m.name : m; mOptions += `<option value="${name}">${name}</option>'; });
+        data.members.forEach(m => { const name = typeof m === 'object' ? m.name : m; mOptions += `<option value="${name}">${name}</option>`; });
 
         todayRules.forEach(rule => {
             let currentWorker = '';
