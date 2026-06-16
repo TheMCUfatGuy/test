@@ -802,6 +802,7 @@
         if(days.length === 0) return alert("請至少勾選一個套用星期");
 
         data.fixedTasks.push({label, startTime, endTime, days}); saveData();
+        updatePresetSelects();
         document.getElementById('fixed-task-name').value = '';
     }
 
@@ -809,10 +810,11 @@
         const day = document.getElementById('remind-day').value; const time = document.getElementById('remind-time').value; const text = document.getElementById('remind-text').value.trim();
         if(!text) return alert("請輸入提醒內容");
         data.fixedReminders.push({day: parseInt(day), time, text}); saveData();
+        updatePresetSelects();
         document.getElementById('remind-text').value = '';
     }
 
-    function deleteSettingItem(field, index) { data[field].splice(index, 1); saveData(); }
+    function deleteSettingItem(field, index) { data[field].splice(index, 1); saveData();updatePresetSelects(); }
 
     function renderSettingLists() {
         const cList = document.getElementById('custom-event-list'); if(cList) cList.innerHTML = '';
@@ -839,7 +841,7 @@
         const dSelect = document.getElementById('dispatch-preset-select'); if(dSelect) dSelect.innerHTML = '<option value="">-- 手動輸入或選擇種類 --</option>';
         
         data.customEvents.forEach((item, idx) => { 
-            const opt = `<option value="custom-${idx}">自訂: ${item.label}</option>`; 
+            const opt = `<option value="custom-${idx}">${item.label}</option>`; 
             if(mSelect) mSelect.innerHTML += opt; 
             if(dSelect) dSelect.innerHTML += opt; 
         });
