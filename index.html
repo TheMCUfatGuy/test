@@ -43,7 +43,7 @@
         /* 登入樣式 */
         .auth-container { max-width: 400px; margin: 60px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* 確保電腦版與手機版登出按鈕皆能正常顯示 */
+        /* 導覽列優化 */
         .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         .logout-btn { background: #64748b; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
 
@@ -114,7 +114,6 @@
             .form-row { flex-direction: column; gap: 5px; }
             .form-row button { width: 100%; }
             .checkbox-item { padding: 12px 8px; }
-            .emergency-grid { flex-direction: column !important; gap: 5px !important; }
         }
     </style>
 </head>
@@ -376,26 +375,27 @@
     // ⚠️ 請在此處貼上您專屬的 Firebase 金鑰 (firebaseConfig)
     // --------------------------------------------------
     const firebaseConfig = {
-
-  apiKey: "AIzaSyAuxPt_gpk_H7DqWhNt9VSFr7K6QQZHR6U",
-
-  authDomain: "dpsystem-e7fbc.firebaseapp.com",
-
-  projectId: "dpsystem-e7fbc",
-
-  storageBucket: "dpsystem-e7fbc.firebasestorage.app",
-
-  messagingSenderId: "2760170848",
-
-  appId: "1:2760170848:web:8e1da0f78f5f8815105205",
-
-  measurementId: "G-LPHSTVB8K2"
-
-};
+        apiKey: "請用您的金鑰替換此處",
+        authDomain: "請用您的金鑰替換此處",
+        projectId: "請用您的金鑰替換此處",
+        storageBucket: "請用您的金鑰替換此處",
+        messagingSenderId: "請用您的金鑰替換此處",
+        appId: "請用您的金鑰替換此處"
+    };
     
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // 初始化防錯
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "請用您的金鑰替換此處") {
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch(e) {
+            console.error("Firebase 初始化失敗:", e);
+        }
+    } else {
+        console.warn("⚠️ 請記得填寫正確的 Firebase Config 金鑰，否則無法連線資料庫！");
+    }
+
+    const auth = firebase.auth ? firebase.auth() : null;
+    const db = firebase.firestore ? firebase.firestore() : null;
 
     let data = { 
         members: [],      
@@ -417,44 +417,51 @@
     let currentBoardView = 'text'; 
     let currentActiveDateStr = '';
     
-    // 暫存當前臨時追加選定的人員名單與最後送出結果
     let currentEmergencySelectedMembers = [];
     let finalEmergencySubmittedList = []; 
 
-    auth.onAuthStateChanged(user => {
-        if (unsubscribeSnapshot) unsubscribeSnapshot();
-        if (user) {
-            currentUserUid = user.uid;
-            document.getElementById('auth-panel').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            document.getElementById('user-display-email').innerText = `登入帳號：${user.email}`;
-            
-            unsubscribeSnapshot = db.collection("attendance_users").doc(currentUserUid).onSnapshot(doc => {
-                if (doc.exists) {
-                    const cloudData = doc.data();
-                    data = {
-                        members: cloudData.members || [],
-                        memberRoles: cloudData.memberRoles || {},
-                        incidents: cloudData.incidents || {},
-                        customEvents: cloudData.customEvents || [],
-                        fixedTasks: cloudData.fixedTasks || [],
-                        fixedReminders: cloudData.fixedReminders || [],
-                        guardShifts: cloudData.guardShifts || ["02:00-04:00", "04:00-06:00", "22:00-24:00"],
-                        guardHistory: cloudData.guardHistory || {},
-                        fixedTaskHistory: cloudData.fixedTaskHistory || {}
-                    };
+    // Firebase 狀態監聽器
+    if (auth) {
+        auth.onAuthStateChanged(user => {
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            if (user) {
+                currentUserUid = user.uid;
+                document.getElementById('auth-panel').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                document.getElementById('user-display-email').innerText = `登入帳號：${user.email}`;
+                
+                if (db) {
+                    unsubscribeSnapshot = db.collection("attendance_users").doc(currentUserUid).onSnapshot(doc => {
+                        if (doc.exists) {
+                            const cloudData = doc.data();
+                            data = {
+                                members: cloudData.members || [],
+                                memberRoles: cloudData.memberRoles || {},
+                                incidents: cloudData.incidents || {},
+                                customEvents: cloudData.customEvents || [],
+                                fixedTasks: cloudData.fixedTasks || [],
+                                fixedReminders: cloudData.fixedReminders || [],
+                                guardShifts: cloudData.guardShifts || ["02:00-04:00", "04:00-06:00", "22:00-24:00"],
+                                guardHistory: cloudData.guardHistory || {},
+                                fixedTaskHistory: cloudData.fixedTaskHistory || {}
+                            };
+                        }
+                        initSystemRender();
+                    }, err => {
+                        console.error("讀取雲端失敗:", err);
+                        initSystemRender(); // 即使失敗也渲染畫面避免卡死
+                    });
                 }
-                initSystemRender();
-            });
-        } else {
-            currentUserUid = "";
-            document.getElementById('auth-panel').style.display = 'block';
-            document.getElementById('main-app').style.display = 'none';
-        }
-    });
+            } else {
+                currentUserUid = "";
+                document.getElementById('auth-panel').style.display = 'block';
+                document.getElementById('main-app').style.display = 'none';
+            }
+        });
+    }
 
     function saveData() {
-        if(!currentUserUid) return;
+        if(!currentUserUid || !db) return;
         db.collection("attendance_users").doc(currentUserUid).set(data).catch(err => alert("儲存失敗：" + err.message));
     }
 
@@ -462,9 +469,12 @@
         const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value;
         const loginBtn = document.querySelector("#auth-panel button");
+        
         if(!email || !password) return alert("請輸入帳號密碼");
+        if(!auth) return alert("Firebase 尚未正確啟動，請檢查程式碼 167 行的金鑰是否填寫正確！");
         
         if (loginBtn) { loginBtn.disabled = true; loginBtn.innerText = "驗證登入中..."; }
+        
         auth.signInWithEmailAndPassword(email, password)
         .then(() => {
             document.getElementById('auth-panel').style.display = 'none';
@@ -480,20 +490,24 @@
     function handleLogout() { if(confirm("確定登出？")) auth.signOut(); }
 
     function initSystemRender() {
-        renderMembers();
-        renderSettingLists();
-        updatePresetSelects(); // 確保重新整理時即時注入自訂事故種類
-        
-        const todayStr = new Date().toISOString().split('T')[0];
-        if(!document.getElementById('board-date').value) document.getElementById('board-date').value = todayStr;
-        if(!document.getElementById('guard-date').value) document.getElementById('guard-date').value = todayStr;
-        if(!document.getElementById('stat-date').value) document.getElementById('stat-date').value = todayStr;
-        if(!document.getElementById('report-date').value) document.getElementById('report-date').value = todayStr;
+        try {
+            renderMembers();
+            renderSettingLists();
+            updatePresetSelects(); 
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            if(!document.getElementById('board-date').value) document.getElementById('board-date').value = todayStr;
+            if(!document.getElementById('guard-date').value) document.getElementById('guard-date').value = todayStr;
+            if(!document.getElementById('stat-date').value) document.getElementById('stat-date').value = todayStr;
+            if(!document.getElementById('report-date').value) document.getElementById('report-date').value = todayStr;
 
-        if(document.getElementById('tab-member').classList.contains('active') && currentSelectMember) { renderWeekCalendar(); }
-        if(document.getElementById('tab-report').classList.contains('active')) { refreshReportPage(); }
-        if(document.getElementById('tab-setting').classList.contains('active')) { renderGuardTable(); renderFixedTaskTable(); generateStatReport(); }
-        if(document.getElementById('tab-board').classList.contains('active')) { renderTodayBoard(); }
+            if(document.getElementById('tab-member').classList.contains('active') && currentSelectMember) { renderWeekCalendar(); }
+            if(document.getElementById('tab-report').classList.contains('active')) { refreshReportPage(); }
+            if(document.getElementById('tab-setting').classList.contains('active')) { renderGuardTable(); renderFixedTaskTable(); generateStatReport(); }
+            if(document.getElementById('tab-board').classList.contains('active')) { renderTodayBoard(); }
+        } catch (e) {
+            console.error("渲染過程發生錯誤:", e);
+        }
     }
 
     function switchTab(tabId) {
@@ -516,7 +530,8 @@
 
     // --- 人員管理與整合型個人週曆 ---
     function renderMembers() {
-        const listDiv = document.getElementById('member-list'); listDiv.innerHTML = '';
+        const listDiv = document.getElementById('member-list'); if(!listDiv) return;
+        listDiv.innerHTML = '';
         if(!data.members || data.members.length === 0) { listDiv.innerHTML = '<p style="color:#64748b; text-align:center;">暫無人員</p>'; return; }
         
         data.members.forEach(m => {
@@ -544,7 +559,7 @@
 
     function updateEmbeddedCalTitle(name) {
         const role = data.memberRoles?.[name] || ''; const roleDisplay = role ? ` [${role}]` : ' [+未設定職位]';
-        const titleEl = document.getElementById('current-member-title');
+        const titleEl = document.getElementById('current-member-title'); if(!titleEl) return;
         titleEl.innerHTML = `<span style="cursor:pointer; color:var(--primary); text-decoration:underline;">${name}${roleDisplay} ⚙️</span>`;
         titleEl.onclick = () => {
             const currentRole = data.memberRoles?.[name] || '';
@@ -561,7 +576,8 @@
     function getMonday(d) { d = new Date(d); const day = d.getDay(); const diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
 
     function renderWeekCalendar() {
-        const container = document.getElementById('week-container'); container.innerHTML = '';
+        const container = document.getElementById('week-container'); if(!container) return;
+        container.innerHTML = '';
         const monday = getMonday(currentCalDate); const endDayCount = showWeekend ? 7 : 5;
         const weekGrid = document.createElement('div'); weekGrid.className = `week-grid ${showWeekend ? 'show-weekend' : ''}`;
         
@@ -606,7 +622,8 @@
         }
         container.appendChild(weekGrid);
         const sat = new Date(monday); sat.setDate(monday.getDate() + 4);
-        document.getElementById('week-date-range').innerText = `${monday.getMonth()+1}/${monday.getDate()} ~ ${sat.getMonth()+1}/${sat.getDate()}`;
+        const dateRangeEl = document.getElementById('week-date-range');
+        if (dateRangeEl) dateRangeEl.innerText = `${monday.getMonth()+1}/${monday.getDate()} ~ ${sat.getMonth()+1}/${sat.getDate()}`;
     }
 
     function openIncidentModal(dateStr) {
@@ -668,7 +685,6 @@
         }
     }
 
-
     // --- 快速摘要 ---
     function toggleBoardView() {
         const visualDiv = document.getElementById('board-view-visual'); const textDiv = document.getElementById('board-view-text');
@@ -684,7 +700,8 @@
     function renderTodayBoard() {
         const targetDate = document.getElementById('board-date').value; const dateObj = new Date(targetDate); const dayOfWeek = dateObj.getDay();
         
-        const todoDiv = document.getElementById('board-todo-reminders'); todoDiv.innerHTML = '';
+        const todoDiv = document.getElementById('board-todo-reminders'); if(!todoDiv) return;
+        todoDiv.innerHTML = '';
         const todayReminders = data.fixedReminders.filter(r => r.day === dayOfWeek);
         if(todayReminders.length > 0) {
             todayReminders.forEach((r, idx) => {
@@ -695,7 +712,8 @@
             });
         } else { todoDiv.innerHTML = '<span style="color:#64748b; font-size:13px;">今日無特定提醒事項。</span>'; }
 
-        const container = document.getElementById('board-events-container'); container.innerHTML = '';
+        const container = document.getElementById('board-events-container'); if(!container) return;
+        container.innerHTML = '';
         let hasEvent = false;
 
         data.members.forEach(m => {
@@ -754,10 +772,10 @@
         txt += `應到：${data.members.length} 人\n`; txt += `事故：${totalAbsentCount} 人\n`;
         for(let key in incidentMap) { txt += `${key}${incidentMap[key].length}：${incidentMap[key].join('、')}\n`; }
         txt += `\n實到${presentList.length}：${presentList.join('、')}`;
-        document.getElementById('board-text-output').innerText = txt;
+        const outEl = document.getElementById('board-text-output');
+        if (outEl) outEl.innerText = txt;
     }
     function copyBoardText() { navigator.clipboard.writeText(document.getElementById('board-text-output').innerText).then(() => alert("複製成功！")); }
-
 
     // --- 勤務中心 ---
     function addCustomEventType() {
@@ -787,20 +805,25 @@
     function deleteSettingItem(field, index) { data[field].splice(index, 1); saveData(); }
 
     function renderSettingLists() {
-        const cList = document.getElementById('custom-event-list'); cList.innerHTML = '';
-        data.customEvents.forEach((item, idx) => { cList.innerHTML += `<li class="setting-item"><span>${item.label} (${item.startTime}~${item.endTime})</span><button onclick="deleteSettingItem('customEvents', ${idx})">刪除</button></li>`; });
+        const cList = document.getElementById('custom-event-list'); if(cList) cList.innerHTML = '';
+        if(cList) {
+            data.customEvents.forEach((item, idx) => { cList.innerHTML += `<li class="setting-item"><span>${item.label} (${item.startTime}~${item.endTime})</span><button onclick="deleteSettingItem('customEvents', ${idx})">刪除</button></li>`; });
+        }
         
-        const tList = document.getElementById('fixed-task-list'); tList.innerHTML = ''; const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
-        data.fixedTasks.forEach((item, idx) => { 
-            const daysStr = item.days.map(d => weekLabels[d]).join(',');
-            tList.innerHTML += `<li class="setting-item"><span>⚙️ ${item.label} (${item.startTime}~${item.endTime}) [每週：${daysStr}]</span><button onclick="deleteSettingItem('fixedTasks', ${idx})">刪除</button></li>`; 
-        });
+        const tList = document.getElementById('fixed-task-list'); if(tList) tList.innerHTML = ''; const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
+        if(tList) {
+            data.fixedTasks.forEach((item, idx) => { 
+                const daysStr = item.days.map(d => weekLabels[d]).join(',');
+                tList.innerHTML += `<li class="setting-item"><span>⚙️ ${item.label} (${item.startTime}~${item.endTime}) [每週：${daysStr}]</span><button onclick="deleteSettingItem('fixedTasks', ${idx})">刪除</button></li>`; 
+            });
+        }
         
-        const rList = document.getElementById('reminder-list'); rList.innerHTML = ''; 
-        data.fixedReminders.forEach((item, idx) => { rList.innerHTML += `<li class="setting-item"><span>週${weekLabels[item.day]} ${item.time} - ${item.text}</span><button onclick="deleteSettingItem('fixedReminders', ${idx})">刪除</button></li>`; });
+        const rList = document.getElementById('reminder-list'); if(rList) rList.innerHTML = ''; 
+        if(rList) {
+            data.fixedReminders.forEach((item, idx) => { rList.innerHTML += `<li class="setting-item"><span>週${weekLabels[item.day]} ${item.time} - ${item.text}</span><button onclick="deleteSettingItem('fixedReminders', ${idx})">刪除</button></li>`; });
+        }
     }
 
-    // 第二點修正：徹底重寫選單注入邏輯，每次重新整理或設定異動都保證塞入最新值
     function updatePresetSelects() {
         const mSelect = document.getElementById('modal-preset-select'); if(mSelect) mSelect.innerHTML = '<option value="">-- 請選擇 --</option>';
         const dSelect = document.getElementById('dispatch-preset-select'); if(dSelect) dSelect.innerHTML = '<option value="">-- 手動輸入或選擇種類 --</option>';
@@ -832,12 +855,14 @@
         data.guardShifts.push(str); saveData();
     }
     function renderGuardTable() {
-        const targetDate = document.getElementById('guard-date').value; const tbody = document.getElementById('guard-table-body'); tbody.innerHTML = '';
-        const container = document.getElementById('guard-shifts-tags'); container.innerHTML = '';
+        const targetDate = document.getElementById('guard-date').value; const tbody = document.getElementById('guard-table-body'); if(!tbody) return; tbody.innerHTML = '';
+        const container = document.getElementById('guard-shifts-tags'); if(container) container.innerHTML = '';
         
-        data.guardShifts.sort().forEach((shift, idx) => {
-            container.innerHTML += `<span style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; display:inline-flex; align-items:center;">${shift} <span style="cursor:pointer; margin-left:4px;" onclick="deleteSettingItem('guardShifts', ${idx})">×</span></span>`;
-        });
+        if(container && data.guardShifts) {
+            data.guardShifts.sort().forEach((shift, idx) => {
+                container.innerHTML += `<span style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; display:inline-flex; align-items:center;">${shift} <span style="cursor:pointer; margin-left:4px;" onclick="deleteSettingItem('guardShifts', ${idx})">×</span></span>`;
+            });
+        }
 
         let mOptions = '<option value="">-- 尚未排哨 --</option>';
         data.members.forEach(m => { const name = typeof m === 'object' ? m.name : m; mOptions += `<option value="${name}">${name}</option>`; });
@@ -909,7 +934,7 @@
 
     // --- 固定勤務智慧排班 ---
     function renderFixedTaskTable() {
-        const targetDate = document.getElementById('fixed-assign-date').value; const tbody = document.getElementById('fixed-task-table-body'); tbody.innerHTML = '';
+        const targetDate = document.getElementById('fixed-assign-date').value; const tbody = document.getElementById('fixed-task-table-body'); if(!tbody) return; tbody.innerHTML = '';
         if(!targetDate) return; const dayOfWeek = new Date(targetDate).getDay();
         
         const todayRules = data.fixedTasks.filter(t => t.days.includes(dayOfWeek));
@@ -1004,12 +1029,13 @@
         let txt = `${monthDayStr}連部組操課人數編排\n`; txt += `應到：${data.members.length} 人\n`; txt += `事故：${totalAbsentCount} 人\n`;
         for(let key in incidentMap) { txt += `${key}${incidentMap[key].length}：${incidentMap[key].join('、')}\n`; }
         txt += `實到${presentList.length}：${presentList.join('、')}`;
-        document.getElementById('stat-report-output').innerText = txt;
+        const outEl = document.getElementById('stat-report-output');
+        if (outEl) outEl.innerText = txt;
     }
     function copyStatReportText() { navigator.clipboard.writeText(document.getElementById('stat-report-output').innerText).then(() => alert("複製成功！")); }
 
 
-    // --- 人數中心 (第一點核心更新) ---
+    // --- 人數中心 ---
     let actualPresentMembers = new Set();
     
     function refreshReportPage() {
@@ -1017,7 +1043,7 @@
         const setMin = timeToMinutes(document.getElementById('report-time').value);
         
         actualPresentMembers.clear(); 
-        currentEmergencySelectedMembers = []; // 切換日期與時間時同步將臨時事故重算
+        currentEmergencySelectedMembers = []; 
 
         data.members.forEach(m => {
             const name = (typeof m === 'object') ? m.name : m; const evts = data.incidents?.[name]?.[targetDate] || [];
@@ -1030,14 +1056,15 @@
         });
         
         renderAttendanceCheckboxes(); 
-        updateEmergencyMemberSelect(); // 更新突發事故專屬下拉選單
+        updateEmergencyMemberSelect(); 
         updateEmergencyStatusUI();
         generateReport(); 
         checkFreeMembers();
     }
 
     function renderAttendanceCheckboxes() {
-        const container = document.getElementById('report-attendance-list'); container.innerHTML = '';
+        const container = document.getElementById('report-attendance-list'); if(!container) return;
+        container.innerHTML = '';
         data.members.forEach(m => {
             const name = (typeof m === 'object') ? m.name : m; const role = data.memberRoles?.[name] || '';
             const div = document.createElement('div'); div.className = 'checkbox-item';
@@ -1051,13 +1078,11 @@
         });
     }
 
-    // 第一點修改：更新突發臨時事故的選人名單
     function updateEmergencyMemberSelect() {
-        const select = document.getElementById('emergency-member-select');
+        const select = document.getElementById('emergency-member-select'); if(!select) return;
         select.innerHTML = '<option value="">-- 點選人員加入事故 --</option>';
         data.members.forEach(m => {
             const name = (typeof m === 'object') ? m.name : m;
-            // 只有目前在「實際到場（且尚未被加進臨時事故）」的人，才可以被選
             if(!currentEmergencySelectedMembers.includes(name)) {
                 select.innerHTML += `<option value="${name}">${name}</option>`;
             }
@@ -1065,16 +1090,13 @@
     }
 
     function selectEmergencyMember() {
-        const select = document.getElementById('emergency-member-select');
+        const select = document.getElementById('emergency-member-select'); if(!select) return;
         const name = select.value;
         if(!name) return;
 
-        // 1. 加入臨時暫存陣列
         currentEmergencySelectedMembers.push(name);
-        // 2. 從實到名單中移除
         actualPresentMembers.delete(name);
         
-        // 更新 UI 與重繪
         updateEmergencyMemberSelect();
         updateEmergencyStatusUI();
         renderAttendanceCheckboxes();
@@ -1082,8 +1104,10 @@
     }
 
     function updateEmergencyStatusUI() {
-        document.getElementById('emergency-status-count').innerText = currentEmergencySelectedMembers.length;
-        document.getElementById('emergency-status-names').innerText = currentEmergencySelectedMembers.length > 0 ? currentEmergencySelectedMembers.join('、') : '暫無';
+        const countEl = document.getElementById('emergency-status-count');
+        const namesEl = document.getElementById('emergency-status-names');
+        if (countEl) countEl.innerText = currentEmergencySelectedMembers.length;
+        if (namesEl) namesEl.innerText = currentEmergencySelectedMembers.length > 0 ? currentEmergencySelectedMembers.join('、') : '暫無';
     }
 
     function addEmergencyItem() {
@@ -1091,14 +1115,12 @@
         if(!label) return alert("請先輸入臨時事故名稱（如：臨時公假）");
         if(currentEmergencySelectedMembers.length === 0) return alert("請至少從下拉選單中點選一名人員！");
 
-        // 將確定的事故放進最終產出文字陣列
         finalEmergencySubmittedList.push({
             label: label,
             count: currentEmergencySelectedMembers.length,
             names: [...currentEmergencySelectedMembers]
         });
 
-        // 清空當前選取暫存，準備下一次輸入
         currentEmergencySelectedMembers = [];
         document.getElementById('emergency-label').value = '';
         
@@ -1110,7 +1132,6 @@
 
     function popEmergencyItem() {
         if(finalEmergencySubmittedList.length === 0) {
-            // 如果最終名單沒有，看當前有沒有正在選的人，有的話就退回最後一個
             if(currentEmergencySelectedMembers.length > 0) {
                 const popped = currentEmergencySelectedMembers.pop();
                 actualPresentMembers.add(popped);
@@ -1123,9 +1144,7 @@
             return alert("目前沒有可撤回的臨時突發事故。");
         }
         
-        // 撤回最後一個送出的區塊
         const poppedItem = finalEmergencySubmittedList.pop();
-        // 將這些人重新放回實到 Set
         poppedItem.names.forEach(name => actualPresentMembers.add(name));
 
         updateEmergencyMemberSelect();
@@ -1156,7 +1175,6 @@
 
         let incidentMap = {}; let totalAbsentCount = 0;
 
-        // 1. 統計常規事故
         data.members.forEach(m => {
             const name = (typeof m === 'object') ? m.name : m; const evts = data.incidents?.[name]?.[targetDate] || [];
             evts.forEach(e => {
@@ -1168,7 +1186,6 @@
             });
         });
 
-        // 2. 疊加未點選「確定併入」但正選在快取中的人員
         if(currentEmergencySelectedMembers.length > 0) {
             const tempLabel = document.getElementById('emergency-label').value.trim() || "突發臨時事故";
             totalAbsentCount += currentEmergencySelectedMembers.length;
@@ -1178,7 +1195,6 @@
             });
         }
 
-        // 3. 疊加已經確定「送出」的突發臨時事故
         finalEmergencySubmittedList.forEach(item => {
             totalAbsentCount += item.count;
             if(!incidentMap[item.label]) incidentMap[item.label] = [];
@@ -1193,7 +1209,8 @@
         txt += `\n實到${actualPresentMembers.size}：${actualPresentMembers.size > 0 ? Array.from(actualPresentMembers).join('、') : '無'}\n\n`;
         txt += `有沒標記到的事故麻煩回報 🙏`;
         
-        document.getElementById('report-output').innerText = txt;
+        const outEl = document.getElementById('report-output');
+        if (outEl) outEl.innerText = txt;
     }
 
     function copyReportText() { navigator.clipboard.writeText(document.getElementById('report-output').innerText).then(() => alert("複製成功！")); }
@@ -1201,7 +1218,7 @@
     function checkFreeMembers() {
         const targetDate = document.getElementById('report-date').value;
         const qStart = timeToMinutes(document.getElementById('free-start').value); const qEnd = timeToMinutes(document.getElementById('free-end').value);
-        const listDiv = document.getElementById('free-members-list'); listDiv.innerHTML = '';
+        const listDiv = document.getElementById('free-members-list'); if(!listDiv) return; listDiv.innerHTML = '';
         if(qStart >= qEnd) { listDiv.innerHTML = '<span style="color:var(--danger)">時間有誤</span>'; return; }
 
         data.members.forEach(m => {
